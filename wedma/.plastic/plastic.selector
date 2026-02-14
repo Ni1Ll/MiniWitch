@@ -1,0 +1,4 @@
+repository "wedma/wedma@7972532210591@cloud"
+  path "/"
+    br "/main"
+    co "/main"
