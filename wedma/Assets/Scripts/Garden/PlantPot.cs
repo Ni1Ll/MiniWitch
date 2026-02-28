@@ -1,69 +1,126 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlantPot : MonoBehaviour
 {
-    [Header("���������")]
-    public Transform plantVisual; 
-    public float growthSpeed = 10f; 
+    [Header("Состояние")]
+    public float currentWater = 0f;
+    public float maxWater = 100f;
+    public float currentTemperature = 20f; // Температура грядки
 
-    private bool hasSeed = false;
-    private bool isWatered = false;
-    private float currentGrowth = 0f;
+    [Header("Кто здесь живет?")]
+    public PlantData currentPlant; // Ссылка на файл (какое растение посажено)
 
-    void Start()
-    {
-        if (plantVisual != null)
-            plantVisual.localScale = Vector3.zero;
-    }
+    // Внутренние переменные
+    private GameObject spawnedVisual;
+    public float currentGrowth = 0f;
+    public float currentHealth = 100f;
+    public bool isDead = false;
 
     void Update()
     {
-        if (hasSeed && isWatered && currentGrowth < 100f)
+        if (currentPlant != null && !isDead)
         {
-            currentGrowth += growthSpeed * Time.deltaTime;
-            UpdateVisual();
+            ProcessGrowth();
+            UpdateVisualSize();
         }
     }
 
-    public void Interact(ItemType itemInHand)
+    void ProcessGrowth()
     {
-        if (!hasSeed && itemInHand == ItemType.Seeds)
+        // 1. Температура (читаем из файла!)
+        float tempDiff = Mathf.Abs(currentTemperature - currentPlant.optimalTemp);
+        if (tempDiff > currentPlant.tempRange) currentHealth -= 5f * Time.deltaTime;
+
+        // 2. Вода
+        if (currentWater > 0)
         {
-            hasSeed = true;
-            Debug.Log("���� ��������!");
+            currentWater -= currentPlant.waterConsumption * Time.deltaTime;
+            currentGrowth += currentPlant.growthSpeed * Time.deltaTime;
+            currentHealth += 5f * Time.deltaTime;
         }
-        else if (hasSeed && !isWatered && itemInHand == ItemType.WateringCan)
+        else
         {
-            isWatered = true;
-            Debug.Log("������! �������� ������ �����.");
+            currentHealth -= 10f * Time.deltaTime;
         }
-        else if (currentGrowth >= 100f)
+
+        currentWater = Mathf.Clamp(currentWater, 0, maxWater);
+        currentGrowth = Mathf.Clamp(currentGrowth, 0, 100);
+
+        if (currentHealth <= 0) Die();
+    }
+
+    // Принимаем не Тип, а данные от Игрока
+    public void Interact(WitchInteraction witch)
+    {
+        if (isDead)
         {
-            Harvest();
+            ClearPot();
+            return;
+        }
+
+        if (witch.hasWateringCan)
+        {
+            currentWater = maxWater;
+            Debug.Log("Полито!");
+            return;
+        }
+
+        // Если грядка пустая И у ведьмы есть данные растения
+        if (currentPlant == null && witch.currentPlantData != null)
+        {
+            Plant(witch.currentPlantData);
+            witch.currentPlantData = null; // Забираем семена у ведьмы
+            witch.UpdateHandVisuals();     // Обновляем руки
         }
     }
 
-    void UpdateVisual()
+    void Plant(PlantData newData)
     {
-        if (plantVisual != null)
+        currentPlant = newData; // Запомнили файл
+
+        // Создаем визуал
+        if (currentPlant.healthyPrefab != null)
         {
-            float finalHeight = 2f; 
-            float thickness = 0.5f;   
-
-            float currentHeight = (currentGrowth / 100f) * finalHeight;
-
-            plantVisual.localScale = new Vector3(thickness, currentHeight, thickness);
-
-            plantVisual.localPosition = new Vector3(0, currentHeight, 0);
+            if (spawnedVisual != null) Destroy(spawnedVisual);
+            spawnedVisual = Instantiate(currentPlant.healthyPrefab, transform);
+            spawnedVisual.transform.localPosition = Vector3.zero;
+            spawnedVisual.transform.localRotation = Quaternion.identity;
         }
-    }
 
-    void Harvest()
-    {
-        Debug.Log("������ ������! +1 ������ � ���������.");
-        hasSeed = false;
-        isWatered = false;
         currentGrowth = 0f;
-        plantVisual.localScale = Vector3.zero;
+        currentHealth = 100f;
+        isDead = false;
+        Debug.Log($"Посажена: {currentPlant.plantName}");
+    }
+
+    void Die()
+    {
+        isDead = true;
+        Debug.Log("Погибло!");
+
+        if (spawnedVisual != null) Destroy(spawnedVisual);
+
+        if (currentPlant.deadPrefab != null)
+        {
+            spawnedVisual = Instantiate(currentPlant.deadPrefab, transform);
+            spawnedVisual.transform.localPosition = Vector3.zero;
+        }
+    }
+
+    void ClearPot()
+    {
+        if (spawnedVisual != null) Destroy(spawnedVisual);
+        currentPlant = null;
+        isDead = false;
+    }
+
+    void UpdateVisualSize()
+    {
+        if (spawnedVisual != null)
+        {
+            float percent = currentGrowth / 100f;
+            float h = Mathf.Max(0.1f, percent * 3.0f);
+            spawnedVisual.transform.localScale = new Vector3(0.3f, h, 0.3f);
+        }
     }
 }

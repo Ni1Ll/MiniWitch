@@ -2,81 +2,90 @@ using UnityEngine;
 
 public class WitchInteraction : MonoBehaviour
 {
-    [Header("Предметы в руке (перетащи сюда объекты из иерархии)")]
-    public GameObject seedsModelInHand;      // Ссылка на выключенную модель семян в руке
-    public GameObject wateringCanModelInHand;// Ссылка на выключенную модель лейки в руке
-
     [Header("Настройки")]
-    public float pickupRadius = 2.0f; // Радиус, в котором ищем предметы
-    public ItemType currentItem = ItemType.None; // Что сейчас у нас есть
+    public float pickupRadius = 2f;
+
+    [Header("Инвентарь")]
+    public PlantData currentPlantData; // Какие семена держим (ссылка на файл)
+    public bool hasWateringCan = false;
+
+    [Header("Визуал рук")]
+    public GameObject seedsBagVisual;
+    public GameObject wateringCanVisual;
+
+    void Start() { UpdateHandVisuals(); }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryInteract();
-        }
+        if (Input.GetKeyDown(KeyCode.E)) TryInteract();
+        if (Input.GetKeyDown(KeyCode.G)) DropItem();
     }
 
     void TryInteract()
     {
-        // 1. Создаем невидимую сферу вокруг игрока и получаем список всего, что в нее попало
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, pickupRadius);
+        Collider[] hits = Physics.OverlapSphere(transform.position, pickupRadius);
 
-        foreach (var hit in hitColliders)
+        // 1. Грядки
+        foreach (var hit in hits)
         {
-            // Проверяем: Это предмет (Item)?
-            if (hit.CompareTag("Item"))
+            PlantPot pot = hit.GetComponent<PlantPot>();
+            if (pot != null)
             {
-                PickupItem itemScript = hit.GetComponent<PickupItem>();
-                if (itemScript != null)
-                {
-                    PickUp(itemScript.itemType, hit.gameObject); // Подбираем
-                    return; // Прерываем цикл, чтобы не подобрать 10 предметов за раз
-                }
+                pot.Interact(this); // Передаем СЕБЯ (ведьму) грядке
+                return;
             }
-            // Проверяем: Это грядка (Pot)?
-            else if (hit.CompareTag("Pot"))
+        }
+
+        // 2. Предметы
+        foreach (var hit in hits)
+        {
+            PickupItem item = hit.GetComponent<PickupItem>();
+            if (item != null)
             {
-                PlantPot potScript = hit.GetComponent<PlantPot>();
-                if (potScript != null)
-                {
-                    potScript.Interact(currentItem); // Взаимодействуем
-                    return;
-                }
+                PickUp(item);
+                return;
             }
         }
     }
 
-    void PickUp(ItemType type, GameObject groundObject)
+    void PickUp(PickupItem item)
     {
-        // 1. Сначала прячем всё, что было в руках до этого
-        if (seedsModelInHand) seedsModelInHand.SetActive(false);
-        if (wateringCanModelInHand) wateringCanModelInHand.SetActive(false);
+        if (currentPlantData != null || hasWateringCan) return; // Руки заняты
 
-        // 2. Запоминаем новый предмет
-        currentItem = type;
-
-        // 3. Включаем нужную модельку в руке
-        if (type == ItemType.Seeds && seedsModelInHand != null)
+        if (item.isWateringCan)
         {
-            seedsModelInHand.SetActive(true);
+            hasWateringCan = true;
+            Debug.Log("Взяла лейку");
         }
-        else if (type == ItemType.WateringCan && wateringCanModelInHand != null)
+        else if (item.plantData != null)
         {
-            wateringCanModelInHand.SetActive(true);
+            currentPlantData = item.plantData; // Берем данные из предмета!
+            Debug.Log($"Взяла семена: {item.plantData.plantName}");
         }
 
-        Debug.Log($"Подобрал: {type}");
-
-        // 4. Удаляем предмет с земли
-        Destroy(groundObject);
+        Destroy(item.gameObject);
+        UpdateHandVisuals();
     }
 
-    // Рисуем сферу в редакторе, чтобы ты видела радиус подбора
-    void OnDrawGizmosSelected()
+    void DropItem()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, pickupRadius);
+        if (!hasWateringCan && currentPlantData == null) return;
+
+        // Тут по-хорошему нужно создавать префаб обратно на земле,
+        // но пока просто очистим руки для теста.
+        hasWateringCan = false;
+        currentPlantData = null;
+
+        UpdateHandVisuals();
+        Debug.Log("Выбросила предмет");
+    }
+
+    public void UpdateHandVisuals()
+    {
+        if (seedsBagVisual) seedsBagVisual.SetActive(false);
+        if (wateringCanVisual) wateringCanVisual.SetActive(false);
+
+        if (hasWateringCan && wateringCanVisual) wateringCanVisual.SetActive(true);
+        else if (currentPlantData != null && seedsBagVisual) seedsBagVisual.SetActive(true);
     }
 }

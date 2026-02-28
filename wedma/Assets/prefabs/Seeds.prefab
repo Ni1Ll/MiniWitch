@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6123610679852568634}
   - component: {fileID: 2001324747057160078}
   - component: {fileID: 830193713505748674}
+  - component: {fileID: 9117070920466369023}
   m_Layer: 0
   m_Name: Seeds
   m_TagString: Item
@@ -29,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 8330048283317266632}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.9853454, y: 0.992, z: -11.495}
+  m_LocalPosition: {x: 6.49, y: 0.992, z: -11.495}
   m_LocalScale: {x: -0.054966405, y: -0.054966405, z: -0.012873132}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -123,4 +124,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a5c8ab8f7c64ba4d87c074dbcb4be7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemType: 1
+  plantData: {fileID: 0}
+  isWateringCan: 0
+--- !u!54 &9117070920466369023
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8330048283317266632}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
