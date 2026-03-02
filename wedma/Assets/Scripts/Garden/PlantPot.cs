@@ -49,8 +49,7 @@ public class PlantPot : MonoBehaviour
         if (currentHealth <= 0) Die();
     }
 
-    // Принимаем не Тип, а данные от Игрока
-    public void Interact(WitchInteraction witch)
+    public void Interact(PlayerInventory inventory)
     {
         if (isDead)
         {
@@ -58,19 +57,18 @@ public class PlantPot : MonoBehaviour
             return;
         }
 
-        if (witch.hasWateringCan)
+        if (inventory.hasWateringCan)
         {
             currentWater = maxWater;
             Debug.Log("Полито!");
-            return;
+            return; 
         }
 
-        // Если грядка пустая И у ведьмы есть данные растения
-        if (currentPlant == null && witch.currentPlantData != null)
+        if (currentPlant == null && inventory.HasSeeds())
         {
-            Plant(witch.currentPlantData);
-            witch.currentPlantData = null; // Забираем семена у ведьмы
-            witch.UpdateHandVisuals();     // Обновляем руки
+            PlantData seedData = inventory.RemoveSeeds();
+
+            Plant(seedData);
         }
     }
 

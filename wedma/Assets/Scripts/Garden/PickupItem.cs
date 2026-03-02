@@ -2,10 +2,16 @@ using UnityEngine;
 
 public class PickupItem : MonoBehaviour
 {
-    [Header("Настройки предмета")]
-    public PlantData plantData;
+    [Header("Настройки Предмета")]
+    public bool isWateringCan = false; // Это лейка?
+    public PlantData plantData;        // Если не лейка, то какие это семена?
 
-    public bool isWateringCan = false;
+    void OnValidate()
+    {
+        // Небольшая помощь: меняет имя объекта в редакторе, чтобы не путаться
+        if (plantData != null) gameObject.name = "Pickup_" + plantData.plantName;
+        else if (isWateringCan) gameObject.name = "Pickup_WateringCan";
+    }
 
     void OnDrawGizmos()
     {

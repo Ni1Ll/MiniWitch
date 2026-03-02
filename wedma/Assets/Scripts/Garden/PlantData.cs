@@ -5,9 +5,12 @@ public class PlantData : ScriptableObject
 {
     public string plantName;
 
-    [Header("Визуал")]
-    public GameObject healthyPrefab; // Живой цветок
-    public GameObject deadPrefab;    // Мертвый цветок
+    [Header("Визуал в Мире")]
+    public GameObject healthyPrefab;
+    public GameObject deadPrefab;   
+
+    [Header("Визуал в Руке")]
+    public GameObject handVisualPrefab; 
 
     [Header("Настройки")]
     public float waterConsumption = 5f;
