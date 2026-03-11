@@ -15,7 +15,7 @@ MonoBehaviour:
   plantName: "\u0420\u043E\u0437\u0430 \u0441\u0440\u0435\u0434\u0438 \u043D\u0430\u0432\u043E\u0437\u0430"
   healthyPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
   deadPrefab: {fileID: 4033947181200368389, guid: 74f33b25c7c00df478a00898b75fe647, type: 3}
-  handVisualPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
+  handVisualPrefab: {fileID: 8330048283317266632, guid: 6cdaff36b7dcfb1408ff82e4b9fd8f21, type: 3}
   waterConsumption: 10
   optimalTemp: 25
   tempRange: 10
