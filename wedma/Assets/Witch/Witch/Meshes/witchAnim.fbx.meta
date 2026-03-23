@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: GeoRose
+    second: {fileID: 2100000, guid: 18e6db6d5c366354fafb710bc63a4fb6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Hairs
     second: {fileID: 2100000, guid: 2385ac651b366ce47b192f7fae67ad50, type: 2}
   - first:
@@ -24,6 +29,21 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: Jupe
     second: {fileID: 2100000, guid: 20ca0a718cfd1444db527d2a86072642, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: a480029223870bb48a6140f34b2117da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wand
+    second: {fileID: 2100000, guid: 94780a7555eedb7418d2f7b83133eb14, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: spikes
+    second: {fileID: 2100000, guid: bb550a7d75dc04a4f88f78c1443def61, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -63,7 +83,7 @@ ModelImporter:
       loop: 0
       hasAdditiveReferencePose: 0
       loopTime: 1
-      loopBlend: 1
+      loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
