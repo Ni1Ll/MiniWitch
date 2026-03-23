@@ -38698,75 +38698,6 @@ Mesh:
     offset: 0
     size: 0
     path: 
---- !u!1001 &1513995103
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.3194423
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.5007337
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1.3194423
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 1.231
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2.7068
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -4.9123
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.8589603
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.51204234
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 61.6
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
-      propertyPath: m_Name
-      value: witch
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 8058075a3880a0f49b9f7fecbf8bce1c, type: 3}
 --- !u!1 &1526659277
 GameObject:
   m_ObjectHideFlags: 0
@@ -39636,7 +39567,10 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: 
+  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
+    are already bound by a Humanoid avatar. These transforms can only be changed
+    by Humanoid clips.\n\tTransform 'Armature'\n\tTransform 'Armature'\n\tTransform
+    'Armature'\n\tFrom animation clip 'Armature|Action'\n\tFrom animation clip 'Armature|Action'"
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -60248,7 +60182,6 @@ SceneRoots:
   - {fileID: 1349670411}
   - {fileID: 470009415}
   - {fileID: 1542988974}
-  - {fileID: 1513995103}
   - {fileID: 2123097652}
   - {fileID: 2005937701}
   - {fileID: 804806619}
