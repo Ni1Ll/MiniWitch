@@ -5,24 +5,15 @@ public class WitchInteraction : MonoBehaviour
     [Header("Настройки")]
     public float interactionRadius = 2.5f;
 
-    [Header("Ссылки на ПРЕФАБЫ (ОБЯЗАТЕЛЬНО!)")]
-    // То, что создается на земле, когда выбрасываем
-    public GameObject seedsPickupPrefab;
-    public GameObject wateringCanPickupPrefab;
-
     [Header("Визуал в Руке")]
-    public Transform handSocket;              // Пустышка в ладони (куда крепим)
-    public GameObject wateringCanModelInHand; // Моделька лейки в руке (если есть)
+    public Transform handSocket;
 
-    // Внутренние ссылки
     private PlayerInventory inventory;
-    private GameObject currentSpawnedSeedModel; // Текущая моделька в руке
+    private GameObject currentSpawnedModel;
 
     void Start()
     {
         inventory = GetComponent<PlayerInventory>();
-        if (inventory == null) inventory = gameObject.AddComponent<PlayerInventory>();
-
         UpdateHandVisuals();
     }
 
@@ -30,150 +21,107 @@ public class WitchInteraction : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E)) TryInteract();
         if (Input.GetKeyDown(KeyCode.G)) DropItem();
+
+        HandleHotbarInput();
+    }
+
+    void HandleHotbarInput()
+    {
+        int oldIndex = inventory.selectedHotbarIndex;
+
+        // Колесико мыши
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (scroll > 0f) inventory.ChangeSelectedSlot(-1);
+        else if (scroll < 0f) inventory.ChangeSelectedSlot(1);
+
+        // Цифры 1-5
+        if (Input.GetKeyDown(KeyCode.Alpha1)) inventory.selectedHotbarIndex = 0;
+        if (Input.GetKeyDown(KeyCode.Alpha2)) inventory.selectedHotbarIndex = 1;
+        if (Input.GetKeyDown(KeyCode.Alpha3)) inventory.selectedHotbarIndex = 2;
+        if (Input.GetKeyDown(KeyCode.Alpha4)) inventory.selectedHotbarIndex = 3;
+        if (Input.GetKeyDown(KeyCode.Alpha5)) inventory.selectedHotbarIndex = 4;
+
+        // Если переключили слот — обновляем модельку в руке и картинки в UI
+        if (oldIndex != inventory.selectedHotbarIndex)
+        {
+            UpdateHandVisuals();
+            if (inventory.ui != null) inventory.ui.UpdateAllSlots();
+        }
     }
 
     void TryInteract()
     {
-        // Ищем всё вокруг
         Collider[] hits = Physics.OverlapSphere(transform.position, interactionRadius);
-        bool foundSomething = false;
 
-        // 1. Сначала ищем ГРЯДКИ
         foreach (var hit in hits)
         {
             PlantPot pot = hit.GetComponent<PlantPot>();
             if (pot != null)
             {
-                pot.Interact(inventory); // Грядка сама заберет/даст что надо
+                pot.Interact(inventory);
                 UpdateHandVisuals();
                 return;
             }
         }
 
-        // 2. Если грядок нет, ищем ПРЕДМЕТЫ
         foreach (var hit in hits)
         {
             PickupItem item = hit.GetComponent<PickupItem>();
-            if (item != null)
+            if (item != null && item.itemData != null)
             {
-                TryPickUp(item);
-                foundSomething = true;
-                return; // Берем только один предмет за раз
+                int leftover = inventory.AddItem(item.itemData, 1);
+
+                if (leftover == 0)
+                {
+                    Destroy(item.gameObject);
+                    UpdateHandVisuals();
+                    Debug.Log($"Подобрали: {item.itemData.itemName}");
+                }
+                else Debug.Log("Инвентарь полон!");
+                return;
             }
-        }
-
-        if (!foundSomething) Debug.Log("Рядом ничего нет (пусто).");
-    }
-
-    void TryPickUp(PickupItem item)
-    {
-        bool success = false;
-
-        if (item.isWateringCan)
-        {
-            success = inventory.AddWateringCan();
-        }
-        else if (item.plantData != null)
-        {
-            success = inventory.AddSeeds(item.plantData);
-        }
-        else
-        {
-            Debug.LogError($"ОШИБКА: У предмета '{item.name}' нет галочки Лейки и нет PlantData!");
-        }
-
-        if (success)
-        {
-            Debug.Log($"Подобрали: {item.name}");
-            Destroy(item.gameObject); // Удаляем с земли
-            UpdateHandVisuals();      // Обновляем руку
         }
     }
 
     void DropItem()
     {
+        InventorySlot activeSlot = inventory.GetSelectedSlot();
+        if (activeSlot.IsEmpty) return;
+
         Vector3 dropPos = transform.position + transform.forward * 1.0f + Vector3.up * 0.5f;
 
-        // --- ВЫБРАСЫВАЕМ ЛЕЙКУ ---
-        if (inventory.hasWateringCan)
+        if (activeSlot.item.dropPrefab != null)
         {
-            if (wateringCanPickupPrefab == null)
-            {
-                Debug.LogError("СТОП! Не могу выбросить лейку: В поле 'Watering Can Pickup Prefab' пусто!");
-                return;
-            }
-
-            Instantiate(wateringCanPickupPrefab, dropPos, Quaternion.identity);
-            inventory.RemoveWateringCan();
-            Debug.Log("Лейка выброшена.");
+            GameObject droppedObj = Instantiate(activeSlot.item.dropPrefab, dropPos, Quaternion.identity);
+            PickupItem pickup = droppedObj.GetComponent<PickupItem>();
+            if (pickup != null) pickup.itemData = activeSlot.item;
         }
-        // --- ВЫБРАСЫВАЕМ СЕМЕНА ---
-        else if (inventory.HasSeeds())
-        {
-            if (seedsPickupPrefab == null)
-            {
-                Debug.LogError("СТОП! Не могу выбросить семена: В поле 'Seeds Pickup Prefab' пусто!");
-                return;
-            }
 
-            // 1. Забираем данные
-            PlantData dataToDrop = inventory.RemoveSeeds();
+        inventory.ConsumeSelectedItem();
 
-            // 2. Создаем мешочек
-            GameObject newBag = Instantiate(seedsPickupPrefab, dropPos, Quaternion.identity);
-
-            // 3. Передаем данные мешочку
-            var pickupScript = newBag.GetComponent<PickupItem>();
-            if (pickupScript != null)
-            {
-                pickupScript.plantData = dataToDrop;
-                // pickupScript.isWateringCan = false; // На всякий случай
-            }
-
-            Debug.Log($"Выброшены семена: {dataToDrop.plantName}");
-        }
+        // Если это был инструмент, очищаем слот полностью при выбросе
+        if (activeSlot.item != null && activeSlot.item.isTool) activeSlot.Clear();
 
         UpdateHandVisuals();
+
+        // Обновляем картинки UI после выброса
+        if (inventory.ui != null) inventory.ui.UpdateAllSlots();
     }
 
     public void UpdateHandVisuals()
     {
-        // 1. Очистка: Удаляем созданную модельку семян
-        if (currentSpawnedSeedModel != null)
+        if (currentSpawnedModel != null)
         {
-            Destroy(currentSpawnedSeedModel);
-            currentSpawnedSeedModel = null;
+            Destroy(currentSpawnedModel);
+            currentSpawnedModel = null;
         }
 
-        // 2. Очистка: Выключаем лейку
-        if (wateringCanModelInHand) wateringCanModelInHand.SetActive(false);
-
-        // 3. Включение ЛЕЙКИ
-        if (inventory.hasWateringCan)
+        InventorySlot activeSlot = inventory.GetSelectedSlot();
+        if (!activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
         {
-            if (wateringCanModelInHand) wateringCanModelInHand.SetActive(true);
-        }
-        // 4. Включение СЕМЯН
-        else if (inventory.HasSeeds())
-        {
-            PlantData data = inventory.currentPlantData;
-
-            // Проверки на ошибки
-            if (handSocket == null)
-            {
-                Debug.LogError("ОШИБКА ВИЗУАЛА: Не назначено поле 'Hand Socket' (пустышка в руке)!");
-                return;
-            }
-            if (data.handVisualPrefab == null)
-            {
-                Debug.LogWarning($"ПРЕДУПРЕЖДЕНИЕ: У растения '{data.plantName}' нет префаба для руки (Hand Visual Prefab)!");
-                return;
-            }
-
-            // Создаем модельку
-            currentSpawnedSeedModel = Instantiate(data.handVisualPrefab, handSocket);
-            currentSpawnedSeedModel.transform.localPosition = Vector3.zero;
-            currentSpawnedSeedModel.transform.localRotation = Quaternion.identity;
+            currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
+            currentSpawnedModel.transform.localPosition = Vector3.zero;
+            currentSpawnedModel.transform.localRotation = Quaternion.identity;
         }
     }
 }

@@ -57,18 +57,24 @@ public class PlantPot : MonoBehaviour
             return;
         }
 
-        if (inventory.hasWateringCan)
+        InventorySlot activeSlot = inventory.GetSelectedSlot();
+        if (activeSlot.IsEmpty) return; // Руки пусты
+
+        // 1. Поливаем, если в руках инструмент-лейка
+        if (activeSlot.item.isTool)
         {
             currentWater = maxWater;
             Debug.Log("Полито!");
-            return; 
+            return;
         }
 
-        if (currentPlant == null && inventory.HasSeeds())
+        // 2. Сажаем, если грядка пуста, а в руках семена (PlantData)
+        if (currentPlant == null && activeSlot.item is PlantData)
         {
-            PlantData seedData = inventory.RemoveSeeds();
-
+            PlantData seedData = (PlantData)activeSlot.item;
             Plant(seedData);
+
+            inventory.ConsumeSelectedItem(); // Отнимаем 1 семечко из стака!
         }
     }
 
@@ -88,7 +94,7 @@ public class PlantPot : MonoBehaviour
         currentGrowth = 0f;
         currentHealth = 100f;
         isDead = false;
-        Debug.Log($"Посажена: {currentPlant.plantName}");
+        Debug.Log($"Посажена: {currentPlant.itemName}");
     }
 
     void Die()

@@ -1,55 +1,115 @@
 using UnityEngine;
 
+[System.Serializable]
+public class InventorySlot
+{
+    public ItemData item;
+    public int count;
+
+    public bool IsEmpty => item == null || count <= 0;
+
+    public void Clear()
+    {
+        item = null;
+        count = 0;
+    }
+}
+
 public class PlayerInventory : MonoBehaviour
 {
-    [Header("Состояние Карманов (Только чтение)")]
-    public PlantData currentPlantData;
-    public bool hasWateringCan = false;
+    [Header("Интерфейс (UI)")]
+    public InventoryUI ui; // Ссылка на скрипт отрисовки меню
 
-    // Попытаться положить семена в карман
-    public bool AddSeeds(PlantData data)
+    [Header("Слоты инвентаря")]
+    public InventorySlot[] slots = new InventorySlot[15]; // 15 ячеек всего
+    public int selectedHotbarIndex = 0; // Активный слот (от 0 до 4)
+
+    void Awake()
     {
-        if (data == null)
+        for (int i = 0; i < slots.Length; i++) slots[i] = new InventorySlot();
+    }
+
+    public int AddItem(ItemData data, int amount)
+    {
+        if (!data.isTool)
         {
-            Debug.LogError("ОШИБКА: Пытаемся подобрать предмет, но в нем нет PlantData!");
-            return false;
+            foreach (var slot in slots)
+            {
+                if (slot.item == data && slot.count < data.maxStack)
+                {
+                    int spaceLeft = data.maxStack - slot.count;
+                    if (amount <= spaceLeft)
+                    {
+                        slot.count += amount;
+                        UpdateUI();
+                        return 0;
+                    }
+                    else
+                    {
+                        slot.count += spaceLeft;
+                        amount -= spaceLeft;
+                    }
+                }
+            }
         }
-        if (currentPlantData != null || hasWateringCan)
+
+        foreach (var slot in slots)
         {
-            Debug.Log("Инвентарь: Руки заняты, не могу взять.");
-            return false;
+            if (slot.IsEmpty)
+            {
+                slot.item = data;
+                slot.count = amount;
+                UpdateUI();
+                return 0;
+            }
         }
 
-        currentPlantData = data;
-        return true;
+        return amount;
     }
 
-    // Попытаться положить лейку
-    public bool AddWateringCan()
+    public InventorySlot GetSelectedSlot()
     {
-        if (currentPlantData != null || hasWateringCan)
+        return slots[selectedHotbarIndex];
+    }
+
+    public void ConsumeSelectedItem()
+    {
+        InventorySlot active = GetSelectedSlot();
+        if (!active.IsEmpty && !active.item.isTool)
         {
-            Debug.Log("Инвентарь: Руки заняты.");
-            return false;
+            active.count--;
+            if (active.count <= 0) active.Clear();
+            UpdateUI();
         }
-
-        hasWateringCan = true;
-        return true;
     }
 
-    // Забрать семена (для выброса или посадки)
-    public PlantData RemoveSeeds()
+    public void ChangeSelectedSlot(int direction)
     {
-        var data = currentPlantData;
-        currentPlantData = null;
-        return data;
+        selectedHotbarIndex += direction;
+        if (selectedHotbarIndex > 4) selectedHotbarIndex = 0;
+        if (selectedHotbarIndex < 0) selectedHotbarIndex = 4;
+        UpdateUI();
     }
 
-    // Забрать лейку
-    public void RemoveWateringCan()
+    // --- НОВАЯ ЛОГИКА: Меняем предметы местами (Drag & Drop) ---
+    public void SwapSlots(int index1, int index2)
     {
-        hasWateringCan = false;
+        // 1. Меняем данные в "карманах"
+        InventorySlot temp = slots[index1];
+        slots[index1] = slots[index2];
+        slots[index2] = temp;
+
+        // 2. Обновляем картинки на экране
+        UpdateUI();
+
+        // 3. Обновляем визуал в руке Ведьмы (если перетащили то, что держали в руках)
+        WitchInteraction witch = GetComponent<WitchInteraction>();
+        if (witch != null) witch.UpdateHandVisuals();
     }
 
-    public bool HasSeeds() => currentPlantData != null;
+    // Тот самый потерянный метод!
+    private void UpdateUI()
+    {
+        if (ui != null) ui.UpdateAllSlots();
+    }
 }

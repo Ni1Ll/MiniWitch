@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c331b1e9b53ec4c8608673d02b172a, type: 3}
+  m_Name: WateringCan_Data
+  m_EditorClassIdentifier: 
+  itemName: WateringCan_Data
+  icon: {fileID: 21300000, guid: 8910493d2a01f394fa7a0e19ba864d64, type: 3}
+  maxStack: 1
+  isTool: 1
+  handVisualPrefab: {fileID: 8086298604866234031, guid: 7d1dabe1202b4494f9a8d78c0a4a7a33, type: 3}
+  dropPrefab: {fileID: 8086298604866234031, guid: 7d1dabe1202b4494f9a8d78c0a4a7a33, type: 3}
