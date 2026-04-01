@@ -32,6 +32,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Material.005
+    second: {fileID: 2100000, guid: a480029223870bb48a6140f34b2117da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Wand.001
     second: {fileID: 2100000, guid: 94780a7555eedb7418d2f7b83133eb14, type: 2}
   materials:
