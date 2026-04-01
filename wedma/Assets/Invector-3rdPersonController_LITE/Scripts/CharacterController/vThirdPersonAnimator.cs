@@ -53,16 +53,20 @@ namespace Invector.vCharacterController
                 Time.deltaTime);
 
             // -----------------------------
-            // SMOOTH IDLE BLEND
+            // SMOOTH IDLE SYSTEM
             // -----------------------------
 
+            // плавное применение idle
             animator.SetFloat("IdleIndex", targetIdle, 0.2f, Time.deltaTime);
+
+            var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
             if (isGrounded && inputMagnitude < 0.1f)
             {
                 idleTimer += Time.deltaTime;
 
-                if (idleTimer >= idleChangeTime)
+                if (idleTimer >= idleChangeTime &&
+                    (stateInfo.normalizedTime % 1f) >= 0.85f)
                 {
                     targetIdle = GetRandomIdle();
                     idleTimer = 0f;
