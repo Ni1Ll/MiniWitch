@@ -21,7 +21,7 @@ public class PlayerInventory : MonoBehaviour
     public InventoryUI ui; // —сылка на скрипт отрисовки меню
 
     [Header("—лоты инвентар€")]
-    public InventorySlot[] slots = new InventorySlot[15]; // 15 €чеек всего
+    public InventorySlot[] slots = new InventorySlot[21]; // 15 €чеек всего
     public int selectedHotbarIndex = 0; // јктивный слот (от 0 до 4)
 
     void Awake()

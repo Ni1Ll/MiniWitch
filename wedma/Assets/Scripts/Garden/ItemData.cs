@@ -11,4 +11,8 @@ public class ItemData : ScriptableObject
     [Header("Визуал")]
     public GameObject handVisualPrefab; // Что появляется в руке Ведьмы
     public GameObject dropPrefab;       // Какой мешочек/моделька падает на пол при нажатии G
+
+    [Header("Экономика")] 
+    public int sellPrice = 15; // Сколько монет мы получим при продаже
+    public int buyPrice = 30;  // (Опционально) За сколько это продает торговец
 }

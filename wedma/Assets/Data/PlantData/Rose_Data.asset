@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 430e42bc822eadb40becbae9504e761a, type: 3}
   m_Name: Rose_Data
   m_EditorClassIdentifier: 
-  itemName: 
+  itemName: "\u0421\u0435\u043C\u0435\u043D\u0430"
   icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
   maxStack: 99
   isTool: 0
   handVisualPrefab: {fileID: 8330048283317266632, guid: 6cdaff36b7dcfb1408ff82e4b9fd8f21, type: 3}
   dropPrefab: {fileID: 8330048283317266632, guid: 6cdaff36b7dcfb1408ff82e4b9fd8f21, type: 3}
+  sellPrice: 15
+  buyPrice: 30
   healthyPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
   deadPrefab: {fileID: 4033947181200368389, guid: 74f33b25c7c00df478a00898b75fe647, type: 3}
   waterConsumption: 10

@@ -9,15 +9,17 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
     public TextMeshProUGUI countText;
     public GameObject highlight;
 
-    [HideInInspector] public int slotIndex;
-    private InventoryUI uiManager;
-    private InventorySlot currentSlot;
+    [Header("Настройки Котла")]
+    public bool isResultSlot = false; // Галочка защиты (нельзя класть предметы вручную)
 
-    // Вызывается при старте из InventoryUI
+    [HideInInspector] public int slotIndex;
+    public InventorySlot currentSlot; // Сделали публичным, чтобы слоты могли общаться
+
+    public static SlotUI draggedSlot; // Глобальная память: какой слот мы сейчас тащим
+
     public void Setup(int index, InventoryUI ui)
     {
         slotIndex = index;
-        uiManager = ui;
     }
 
     public void UpdateSlot(InventorySlot slot, bool isSelected)
@@ -36,44 +38,58 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
 
         icon.sprite = slot.item.icon;
         icon.enabled = true;
-
-        if (countText != null)
-        {
-            countText.text = slot.item.isTool ? "" : slot.count.ToString();
-        }
+        if (countText != null) countText.text = slot.item.isTool ? "" : slot.count.ToString();
     }
 
-    // --- ПОДСКАЗКИ ---
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (currentSlot != null && !currentSlot.IsEmpty) Tooltip.instance.ShowTooltip(currentSlot.item.itemName);
     }
     public void OnPointerExit(PointerEventData eventData) => Tooltip.instance.HideTooltip();
 
-    // --- ПЕРЕТАСКИВАНИЕ ---
+    // --- УНИВЕРСАЛЬНОЕ ПЕРЕТАСКИВАНИЕ ---
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // Нельзя тащить пустой слот
+        // Нельзя тащить пустоту или готовое зелье из слота результата
         if (currentSlot == null || currentSlot.IsEmpty) return;
-        uiManager.StartDrag(slotIndex, currentSlot.item.icon);
+
+        draggedSlot = this; // Запоминаем самих себя в глобальную переменную
+        if (InventoryUI.instance != null) InventoryUI.instance.StartDrag(currentSlot.item.icon);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (uiManager.isDragging) uiManager.UpdateDragPosition(Input.mousePosition);
+        if (InventoryUI.instance != null && InventoryUI.instance.isDragging)
+            InventoryUI.instance.UpdateDragPosition(Input.mousePosition);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        uiManager.StopDrag();
+        if (InventoryUI.instance != null) InventoryUI.instance.StopDrag();
+        draggedSlot = null; // Очищаем память, когда отпустили мышку
     }
 
     public void OnDrop(PointerEventData eventData)
     {
-        // Если бросили предмет на этот слот — меняем их местами
-        if (uiManager.isDragging)
+        if (draggedSlot != null && draggedSlot != this && this.currentSlot != null && !this.isResultSlot)
         {
-            uiManager.playerInventory.SwapSlots(uiManager.draggedSlotIndex, slotIndex);
+            // МАГИЯ ОБМЕНА ДАННЫМИ (без индексов и проверок инвентарей)
+            ItemData tempItem = this.currentSlot.item;
+            int tempCount = this.currentSlot.count;
+
+            this.currentSlot.item = draggedSlot.currentSlot.item;
+            this.currentSlot.count = draggedSlot.currentSlot.count;
+
+            draggedSlot.currentSlot.item = tempItem;
+            draggedSlot.currentSlot.count = tempCount;
+
+            // Приказываем ВСЕМ открытым интерфейсам обновить картинки
+            if (InventoryUI.instance != null) InventoryUI.instance.UpdateAllSlots();
+            if (Cauldron.instance != null && Cauldron.isCauldronOpen) Cauldron.instance.UpdateUI();
+
+            // Обновляем визуал в руке Ведьмы
+            WitchInteraction witch = FindFirstObjectByType<WitchInteraction>();
+            if (witch != null) witch.UpdateHandVisuals();
         }
     }
 }

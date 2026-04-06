@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
+    public static InventoryUI instance; // Делаем скрипт доступным отовсюду
+
     [Header("Ссылки")]
     public PlayerInventory playerInventory;
     public GameObject mainInventoryPanel;
@@ -12,18 +14,20 @@ public class InventoryUI : MonoBehaviour
     public SlotUI[] allSlots;
 
     [Header("Перетаскивание (Drag & Drop)")]
-    public Image dragIcon; // Летающая иконка
+    public Image dragIcon;
     [HideInInspector] public bool isDragging = false;
-    [HideInInspector] public int draggedSlotIndex = -1;
+
+    void Awake()
+    {
+        instance = this; // Записываем себя в память при старте
+    }
 
     void Start()
     {
-        // Прячем летающую иконку при старте
         if (dragIcon != null) dragIcon.gameObject.SetActive(false);
 
-        // Раздаем слотам их порядковые номера (Хотбар: 0-4, Главное меню: 0-14)
         for (int i = 0; i < hotbarSlots.Length; i++) hotbarSlots[i].Setup(i, this);
-        for (int i = 0; i < allSlots.Length; i++) allSlots[i].Setup(i, this);
+        for (int i = 0; i < allSlots.Length; i++) allSlots[i].Setup(i + hotbarSlots.Length, this);
 
         if (mainInventoryPanel != null) mainInventoryPanel.SetActive(false);
         UpdateAllSlots();
@@ -31,7 +35,7 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q)) ToggleInventory();
+        if (Input.GetKeyDown(KeyCode.Q) && !Cauldron.isCauldronOpen) ToggleInventory();
     }
 
     void ToggleInventory()
@@ -47,29 +51,26 @@ public class InventoryUI : MonoBehaviour
     {
         if (playerInventory == null) return;
 
-        // Обновляем Хотбар (всегда)
         for (int i = 0; i < hotbarSlots.Length; i++)
         {
             bool isSelected = (i == playerInventory.selectedHotbarIndex);
             hotbarSlots[i].UpdateSlot(playerInventory.slots[i], isSelected);
         }
 
-        // Обновляем Главное меню (если открыто)
         if (mainInventoryPanel != null && mainInventoryPanel.activeSelf)
         {
             for (int i = 0; i < allSlots.Length; i++)
             {
-                bool isSelected = (i == playerInventory.selectedHotbarIndex);
-                allSlots[i].UpdateSlot(playerInventory.slots[i], isSelected);
+                int realIndex = i + hotbarSlots.Length;
+                allSlots[i].UpdateSlot(playerInventory.slots[realIndex], false);
             }
         }
     }
 
-    // --- ЛОГИКА ПЕРЕТАСКИВАНИЯ ---
-    public void StartDrag(int index, Sprite icon)
+    // --- УПРОЩЕННАЯ ЛОГИКА ПЕРЕТАСКИВАНИЯ ---
+    public void StartDrag(Sprite icon)
     {
         isDragging = true;
-        draggedSlotIndex = index;
         if (dragIcon != null)
         {
             dragIcon.sprite = icon;
@@ -85,7 +86,6 @@ public class InventoryUI : MonoBehaviour
     public void StopDrag()
     {
         isDragging = false;
-        draggedSlotIndex = -1;
         if (dragIcon != null) dragIcon.gameObject.SetActive(false);
     }
 }
