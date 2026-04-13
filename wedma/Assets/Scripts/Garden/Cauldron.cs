@@ -47,6 +47,11 @@ public class Cauldron : MonoBehaviour
             cauldronUIPanel.SetActive(isCauldronOpen);
             if (isCauldronOpen) UpdateUI();
         }
+
+        if (InventoryUIManager.instance != null)
+        {
+            InventoryUIManager.instance.SetMechanicMode(isCauldronOpen);
+        }
     }
 
     public void UpdateUI()

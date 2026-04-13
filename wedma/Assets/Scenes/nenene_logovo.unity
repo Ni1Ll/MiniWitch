@@ -256,11 +256,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8982622}
   m_CullTransparentMesh: 1
---- !u!4 &61756647 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4250247685537525404, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &91021802
 GameObject:
   m_ObjectHideFlags: 0
@@ -737,7 +732,7 @@ PrefabInstance:
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.rootBone
       value: 
-      objectReference: {fileID: 61756647}
+      objectReference: {fileID: 0}
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.excludeRoot
       value: 1
@@ -753,19 +748,19 @@ PrefabInstance:
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[0].bone
       value: 
-      objectReference: {fileID: 61756647}
+      objectReference: {fileID: 0}
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[1].bone
       value: 
-      objectReference: {fileID: 489137666}
+      objectReference: {fileID: 0}
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[2].bone
       value: 
-      objectReference: {fileID: 681964507}
+      objectReference: {fileID: 0}
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[3].bone
       value: 
-      objectReference: {fileID: 878413955}
+      objectReference: {fileID: 0}
     - target: {fileID: 2519788696748398162, guid: c3e0344585555e441a3f8cb26ff09577, type: 3}
       propertyPath: jiggleRigData.jiggleTreeInputParameters.stiffness.value
       value: 0.5
@@ -3102,11 +3097,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &489137666 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8158648656298019360, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &503778037
 GameObject:
   m_ObjectHideFlags: 0
@@ -4488,11 +4478,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!4 &681964507 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 574548192829527751, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &683229483
 GameObject:
   m_ObjectHideFlags: 0
@@ -5315,11 +5300,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4371451454408287977, guid: 9831c9e191b2d414ca3954d6de87342e, type: 3}
   m_PrefabInstance: {fileID: 8099064623156397821}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &878413955 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5429963246369098521, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &879004501
 GameObject:
   m_ObjectHideFlags: 0
@@ -5671,6 +5651,7 @@ RectTransform:
   - {fileID: 1827587012}
   - {fileID: 1816167642}
   - {fileID: 998277915}
+  - {fileID: 1580631729}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -6292,11 +6273,6 @@ MonoBehaviour:
   currentSlot:
     item: {fileID: 0}
     count: 0
---- !u!4 &1026164273 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2560385085843686953, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1059240658
 GameObject:
   m_ObjectHideFlags: 0
@@ -7463,7 +7439,7 @@ PrefabInstance:
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.rootBone
       value: 
-      objectReference: {fileID: 1026164273}
+      objectReference: {fileID: 0}
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.excludeRoot
       value: 1
@@ -7479,19 +7455,19 @@ PrefabInstance:
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[0].bone
       value: 
-      objectReference: {fileID: 1026164273}
+      objectReference: {fileID: 0}
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[1].bone
       value: 
-      objectReference: {fileID: 1280471609}
+      objectReference: {fileID: 0}
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[2].bone
       value: 
-      objectReference: {fileID: 1818613276}
+      objectReference: {fileID: 0}
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.transformCachedData.Array.data[3].bone
       value: 
-      objectReference: {fileID: 1801048970}
+      objectReference: {fileID: 0}
     - target: {fileID: 6926282234941409507, guid: a6a29a93c5e72ad48a2f24310850aa21, type: 3}
       propertyPath: jiggleRigData.jiggleTreeInputParameters.stiffness.value
       value: 0.5
@@ -8117,11 +8093,6 @@ MonoBehaviour:
   currentSlot:
     item: {fileID: 0}
     count: 0
---- !u!4 &1280471609 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5362761268138633214, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1289078958
 GameObject:
   m_ObjectHideFlags: 0
@@ -9052,6 +9023,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1520374316}
   m_CullTransparentMesh: 1
+--- !u!1 &1580631728
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1580631729}
+  - component: {fileID: 1580631730}
+  m_Layer: 5
+  m_Name: UI_Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1580631729
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580631728}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 933585714}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1580631730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1580631728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4df4382fcc43154183327d99ba8373d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fullInventoryPanel: {fileID: 1143581454}
+  hotbarPanel: {fileID: 792887774}
 --- !u!1 &1612044919
 GameObject:
   m_ObjectHideFlags: 0
@@ -10027,11 +10048,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1733138069}
   m_CullTransparentMesh: 1
---- !u!4 &1801048970 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1491136695249038811, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1811320853
 GameObject:
   m_ObjectHideFlags: 0
@@ -10205,11 +10221,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0.2, y: 40.1}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!4 &1818613276 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7061129185339391309, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
-  m_PrefabInstance: {fileID: 5275515011873535449}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1824499985
 GameObject:
   m_ObjectHideFlags: 0
@@ -11063,6 +11074,10 @@ PrefabInstance:
       propertyPath: slots.Array.size
       value: 21
       objectReference: {fileID: 0}
+    - target: {fileID: 975798295633743050, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2775280510277032728, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
       propertyPath: m_Height
       value: 1.3815935
@@ -11086,6 +11101,10 @@ PrefabInstance:
     - target: {fileID: 7605243039430485836, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
       propertyPath: m_Name
       value: WitchModel
+      objectReference: {fileID: 0}
+    - target: {fileID: 7605243039430485836, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8584912568149610969, guid: faa7dbe81c1df824bb4483a6a6328fd1, type: 3}
       propertyPath: handSocket
