@@ -57,10 +57,19 @@ public class PlantPot : MonoBehaviour
             return;
         }
 
-        InventorySlot activeSlot = inventory.GetSelectedSlot();
-        if (activeSlot.IsEmpty) return; // Руки пусты
+        // --- НОВАЯ ЛОГИКА: СБОР УРОЖАЯ ---
+        // Если на грядке что-то есть и оно выросло на 100%
+        if (currentPlant != null && currentGrowth >= 100f)
+        {
+            Harvest(inventory);
+            return; // Завершаем взаимодействие, чтобы не сработал полив или посадка
+        }
 
-        // 1. Поливаем, если в руках инструмент-лейка
+        InventorySlot activeSlot = inventory.GetSelectedSlot();
+        // Если руки пусты и сбор не сработал выше — ничего не делаем
+        if (activeSlot.IsEmpty) return;
+
+        // 1. Поливаем (инструментом)
         if (activeSlot.item.isTool)
         {
             currentWater = maxWater;
@@ -68,13 +77,37 @@ public class PlantPot : MonoBehaviour
             return;
         }
 
-        // 2. Сажаем, если грядка пуста, а в руках семена (PlantData)
+        // 2. Сажаем
         if (currentPlant == null && activeSlot.item is PlantData)
         {
             PlantData seedData = (PlantData)activeSlot.item;
             Plant(seedData);
+            inventory.ConsumeSelectedItem();
+        }
+    }
 
-            inventory.ConsumeSelectedItem(); // Отнимаем 1 семечко из стака!
+    private void Harvest(PlayerInventory inventory)
+    {
+        if (currentPlant.harvestResult != null)
+        {
+            // Пытаемся добавить предмет в инвентарь
+            int leftover = inventory.AddItem(currentPlant.harvestResult, currentPlant.harvestAmount);
+
+            if (leftover == 0)
+            {
+                Debug.Log($"Собрано: {currentPlant.harvestResult.itemName}");
+                ClearPot(); // Грядка снова пуста и готова к посадке
+            }
+            else
+            {
+                // Если leftover > 0, значит инвентарь забился
+                Debug.Log("Инвентарь полон! Освободите место для урожая.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"У {currentPlant.itemName} не настроен harvestResult!");
+            ClearPot();
         }
     }
 

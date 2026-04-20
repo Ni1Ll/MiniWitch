@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c331b1e9b53ec4c8608673d02b172a, type: 3}
+  m_Name: New Item
+  m_EditorClassIdentifier: 
+  itemName: "\u0420\u043E\u0437\u0430"
+  icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
+  maxStack: 1
+  isTool: 0
+  handVisualPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
+  dropPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
+  sellPrice: 15
+  buyPrice: 30
