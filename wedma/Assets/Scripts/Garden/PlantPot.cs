@@ -27,7 +27,9 @@ public class PlantPot : MonoBehaviour
 
     void ProcessGrowth()
     {
-        // 1. Температура (читаем из файла!)
+        if (currentGrowth >= 100f) return;
+
+        // 1. Температура
         float tempDiff = Mathf.Abs(currentTemperature - currentPlant.optimalTemp);
         if (tempDiff > currentPlant.tempRange) currentHealth -= 5f * Time.deltaTime;
 

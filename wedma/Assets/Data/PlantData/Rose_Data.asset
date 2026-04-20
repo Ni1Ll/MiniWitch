@@ -26,3 +26,5 @@ MonoBehaviour:
   optimalTemp: 25
   tempRange: 10
   growthSpeed: 10
+  harvestResult: {fileID: 11400000, guid: 6ce6bbd2a21a84147874660c0444f7d1, type: 2}
+  harvestAmount: 1
