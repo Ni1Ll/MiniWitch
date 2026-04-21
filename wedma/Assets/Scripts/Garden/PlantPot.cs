@@ -72,7 +72,7 @@ public class PlantPot : MonoBehaviour
         if (currentPlant != null && currentGrowth >= 100f)
         {
             Harvest(inventory);
-           return PlantActionType.Harvest; // Завершаем взаимодействие, чтобы не сработал полив или посадка
+            return PlantActionType.Harvest; // Завершаем взаимодействие, чтобы не сработал полив или посадка
         }
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
@@ -172,4 +172,19 @@ public class PlantPot : MonoBehaviour
             spawnedVisual.transform.localScale = new Vector3(0.3f, h, 0.3f);
         }
     }
+
+    public PlantActionType GetAvailableAction(PlayerInventory inventory)
+    {
+        if (isDead) return PlantActionType.Clear;
+        if (currentPlant != null && currentGrowth >= 100f) return PlantActionType.Harvest;
+
+        InventorySlot activeSlot = inventory.GetSelectedSlot();
+        if (activeSlot.IsEmpty) return PlantActionType.None;
+
+        if (activeSlot.item.isTool) return PlantActionType.Water;
+        if (currentPlant == null && activeSlot.item is PlantData) return PlantActionType.Plant;
+
+        return PlantActionType.None;
+    }
+
 }
