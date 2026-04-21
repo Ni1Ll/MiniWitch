@@ -147,6 +147,7 @@ MonoBehaviour:
   groundMaxDistance: 0.5
   slopeLimit: 75
   idleChangeTime: 4
+  lockActions: 0
 --- !u!114 &2331821880955739000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +261,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ui: {fileID: 0}
   slots:
+  - item: {fileID: 0}
+    count: 0
+  - item: {fileID: 0}
+    count: 0
+  - item: {fileID: 0}
+    count: 0
+  - item: {fileID: 0}
+    count: 0
+  - item: {fileID: 0}
+    count: 0
+  - item: {fileID: 0}
+    count: 0
   - item: {fileID: 0}
     count: 0
   - item: {fileID: 0}

@@ -292,15 +292,29 @@ public class Cauldron : MonoBehaviour
         Vector2 mouseDir = (Vector2)Input.mousePosition - screenCenter;
         float currentAngle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
 
-        // Начинаем мешать при зажатии Левой Кнопки Мыши
         if (Input.GetMouseButtonDown(0))
         {
+            Camera activeCam = cauldronCameraObj.GetComponent<Camera>();
+            Ray ray = activeCam.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                PickupItem item = hit.collider.GetComponent<PickupItem>();
+                if (item != null && item.itemData is PotionData)
+                {
+                    int leftover = InventoryUI.instance.playerInventory.AddItem(item.itemData, 1);
+                    if (leftover == 0)
+                    {
+                        Debug.Log("Зелье забрано!");
+                        Destroy(item.gameObject);
+                        InventoryUI.instance.UpdateAllSlots();
+                        return; 
+                    }
+                }
+            }
+
             isStirring = true;
             lastMouseAngle = currentAngle;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            isStirring = false;
         }
 
         // Математика кручения
