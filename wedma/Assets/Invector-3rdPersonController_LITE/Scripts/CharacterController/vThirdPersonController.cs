@@ -4,6 +4,8 @@ namespace Invector.vCharacterController
 {
     public class vThirdPersonController : vThirdPersonAnimator
     {
+        public bool lockActions;
+
         public virtual void ControlAnimatorRootMotion()
         {
             if (!this.enabled) return;
@@ -114,6 +116,7 @@ namespace Invector.vCharacterController
 
         public virtual void Jump()
         {
+            if (lockActions) return;
             // trigger jump behaviour
             jumpCounter = jumpTimer;
             isJumping = true;

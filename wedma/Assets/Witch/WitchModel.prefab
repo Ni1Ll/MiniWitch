@@ -243,8 +243,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c35bc251a29439b46995d4d1b3ad962f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 2931819273564407302}
   interactionRadius: 2
-  handSocket: {fileID: 0}
+  handSocket: {fileID: 2920911000378984662}
 --- !u!114 &475467650965310477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1027,6 +1028,11 @@ Transform:
 --- !u!4 &2845664170728125524 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -1585145562689006326, guid: 4e26e27d0a1f1b248942d168336cbbfa, type: 3}
+  m_PrefabInstance: {fileID: 5583824713713246558}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2920911000378984662 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7346659527039789448, guid: 4e26e27d0a1f1b248942d168336cbbfa, type: 3}
   m_PrefabInstance: {fileID: 5583824713713246558}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &4171770661989858278 stripped

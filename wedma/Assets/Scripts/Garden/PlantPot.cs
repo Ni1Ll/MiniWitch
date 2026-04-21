@@ -1,4 +1,12 @@
 ﻿using UnityEngine;
+public enum PlantActionType
+{
+    None,
+    Water,
+    Plant,
+    Harvest,
+    Clear
+}
 
 public class PlantPot : MonoBehaviour
 {
@@ -42,7 +50,7 @@ public class PlantPot : MonoBehaviour
         }
         else
         {
-            currentHealth -= 10f * Time.deltaTime;
+            currentHealth -= 1f * Time.deltaTime;// поменял для теста (было 10f)
         }
 
         currentWater = Mathf.Clamp(currentWater, 0, maxWater);
@@ -51,12 +59,12 @@ public class PlantPot : MonoBehaviour
         if (currentHealth <= 0) Die();
     }
 
-    public void Interact(PlayerInventory inventory)
+    public PlantActionType Interact(PlayerInventory inventory)
     {
         if (isDead)
         {
             ClearPot();
-            return;
+            return PlantActionType.Clear;
         }
 
         // --- НОВАЯ ЛОГИКА: СБОР УРОЖАЯ ---
@@ -64,19 +72,19 @@ public class PlantPot : MonoBehaviour
         if (currentPlant != null && currentGrowth >= 100f)
         {
             Harvest(inventory);
-            return; // Завершаем взаимодействие, чтобы не сработал полив или посадка
+           return PlantActionType.Harvest; // Завершаем взаимодействие, чтобы не сработал полив или посадка
         }
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         // Если руки пусты и сбор не сработал выше — ничего не делаем
-        if (activeSlot.IsEmpty) return;
+        if (activeSlot.IsEmpty) return PlantActionType.None;
 
         // 1. Поливаем (инструментом)
         if (activeSlot.item.isTool)
         {
             currentWater = maxWater;
             Debug.Log("Полито!");
-            return;
+            return PlantActionType.Water;
         }
 
         // 2. Сажаем
@@ -85,7 +93,9 @@ public class PlantPot : MonoBehaviour
             PlantData seedData = (PlantData)activeSlot.item;
             Plant(seedData);
             inventory.ConsumeSelectedItem();
+            return PlantActionType.Plant;
         }
+        return PlantActionType.None;
     }
 
     private void Harvest(PlayerInventory inventory)
