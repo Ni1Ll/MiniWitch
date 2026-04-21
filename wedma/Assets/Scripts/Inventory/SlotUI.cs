@@ -47,10 +47,8 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
     }
     public void OnPointerExit(PointerEventData eventData) => Tooltip.instance.HideTooltip();
 
-    // --- УНИВЕРСАЛЬНОЕ ПЕРЕТАСКИВАНИЕ ---
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // Нельзя тащить пустоту или готовое зелье из слота результата
         if (currentSlot == null || currentSlot.IsEmpty) return;
 
         draggedSlot = this; // Запоминаем самих себя в глобальную переменную
@@ -66,7 +64,50 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
     public void OnEndDrag(PointerEventData eventData)
     {
         if (InventoryUI.instance != null) InventoryUI.instance.StopDrag();
-        draggedSlot = null; // Очищаем память, когда отпустили мышку
+
+        bool isPointerOverUI = eventData.pointerEnter != null && eventData.pointerEnter.GetComponent<SlotUI>() != null;
+
+        if (!isPointerOverUI && Cauldron.isCauldronOpen && currentSlot != null && !currentSlot.IsEmpty && !isResultSlot)
+        {
+            Camera activeCam = Cauldron.instance.cauldronCameraObj.GetComponent<Camera>();
+            Ray ray = activeCam.ScreenPointToRay(Input.mousePosition);
+
+            RaycastHit[] hits = Physics.RaycastAll(ray);
+
+            foreach (RaycastHit hit in hits)
+            {
+                // Ищем среди пробитых объектов нашу воду
+                if (hit.collider.CompareTag("CauldronWater"))
+                {
+                    if (currentSlot.item.dropPrefab != null)
+                    {
+                        // Спавним на 0.5 метра ВЫШЕ точки попадания
+                        Vector3 spawnPos = hit.point + new Vector3(0, 0.5f, 0);
+                        GameObject droppedObj = Instantiate(currentSlot.item.dropPrefab, spawnPos, Quaternion.identity);
+
+                        // Накидываем память предмету
+                        PickupItem pickup = droppedObj.GetComponent<PickupItem>();
+                        if (pickup == null) pickup = droppedObj.AddComponent<PickupItem>();
+                        pickup.itemData = currentSlot.item;
+
+                        // Списываем из инвентаря
+                        currentSlot.count--;
+                        if (currentSlot.count <= 0)
+                        {
+                            currentSlot.item = null;
+                            currentSlot.count = 0;
+                        }
+
+                        // Обновляем картинки
+                        if (InventoryUI.instance != null) InventoryUI.instance.UpdateAllSlots();
+                    }
+
+                    break; // Воду нашли, префаб кинули — прекращаем цикл!
+                }
+            }
+        }
+
+        draggedSlot = null; // Очищаем память
     }
 
     public void OnDrop(PointerEventData eventData)

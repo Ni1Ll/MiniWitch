@@ -2,10 +2,11 @@ using UnityEngine;
 
 public class WitchInteraction : MonoBehaviour
 {
-    [Header("Настройки")]
+    public Animator animator;
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")]
     public float interactionRadius = 2.5f;
 
-    [Header("Визуал в Руке")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ")]
     public Transform handSocket;
 
     private PlayerInventory inventory;
@@ -29,19 +30,19 @@ public class WitchInteraction : MonoBehaviour
     {
         int oldIndex = inventory.selectedHotbarIndex;
 
-        // Колесико мыши
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (scroll > 0f) inventory.ChangeSelectedSlot(-1);
         else if (scroll < 0f) inventory.ChangeSelectedSlot(1);
 
-        // Цифры 1-5
+        // пїЅпїЅпїЅпїЅпїЅ 1-5
         if (Input.GetKeyDown(KeyCode.Alpha1)) inventory.selectedHotbarIndex = 0;
         if (Input.GetKeyDown(KeyCode.Alpha2)) inventory.selectedHotbarIndex = 1;
         if (Input.GetKeyDown(KeyCode.Alpha3)) inventory.selectedHotbarIndex = 2;
         if (Input.GetKeyDown(KeyCode.Alpha4)) inventory.selectedHotbarIndex = 3;
         if (Input.GetKeyDown(KeyCode.Alpha5)) inventory.selectedHotbarIndex = 4;
 
-        // Если переключили слот — обновляем модельку в руке и картинки в UI
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ UI
         if (oldIndex != inventory.selectedHotbarIndex)
         {
             UpdateHandVisuals();
@@ -58,7 +59,26 @@ public class WitchInteraction : MonoBehaviour
             PlantPot pot = hit.GetComponent<PlantPot>();
             if (pot != null)
             {
-                pot.Interact(inventory);
+                PlantActionType action = pot.Interact(inventory);
+
+                if(animator != null)
+                {
+                    switch(action)
+                    {
+                        case PlantActionType.Water:
+                            animator.SetTrigger("Water");
+                            break;
+
+                        case PlantActionType.Plant:
+                            animator.SetTrigger("Plant");
+                            break;
+
+                        case PlantActionType.Harvest:
+                            animator.SetTrigger("Harvest");
+                            break;
+                    }
+                }
+
                 UpdateHandVisuals();
                 return;
             }
@@ -73,11 +93,15 @@ public class WitchInteraction : MonoBehaviour
 
                 if (leftover == 0)
                 {
+                    if (animator != null)
+                    {
+                        animator.SetTrigger("Pickup");
+                    }
                     Destroy(item.gameObject);
                     UpdateHandVisuals();
-                    Debug.Log($"Подобрали: {item.itemData.itemName}");
+                    Debug.Log($"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {item.itemData.itemName}");
                 }
-                else Debug.Log("Инвентарь полон!");
+                else Debug.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ!");
                 return;
             }
         }
@@ -99,12 +123,12 @@ public class WitchInteraction : MonoBehaviour
 
         inventory.ConsumeSelectedItem();
 
-        // Если это был инструмент, очищаем слот полностью при выбросе
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (activeSlot.item != null && activeSlot.item.isTool) activeSlot.Clear();
 
         UpdateHandVisuals();
 
-        // Обновляем картинки UI после выброса
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UI пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (inventory.ui != null) inventory.ui.UpdateAllSlots();
     }
 
@@ -120,8 +144,11 @@ public class WitchInteraction : MonoBehaviour
         if (!activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
         {
             currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
+
             currentSpawnedModel.transform.localPosition = Vector3.zero;
-            currentSpawnedModel.transform.localRotation = Quaternion.identity;
+            currentSpawnedModel.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
+            currentSpawnedModel.transform.localScale = Vector3.one * 0.01f; // рџ‘€ Р’РћРў Р­РўРћ Р”РћР‘РђР’РР›
         }
     }
+    
 }

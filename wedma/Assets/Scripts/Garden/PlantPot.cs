@@ -1,4 +1,12 @@
 ﻿using UnityEngine;
+public enum PlantActionType
+{
+    None,
+    Water,
+    Plant,
+    Harvest,
+    Clear
+}
 
 public class PlantPot : MonoBehaviour
 {
@@ -27,7 +35,9 @@ public class PlantPot : MonoBehaviour
 
     void ProcessGrowth()
     {
-        // 1. Температура (читаем из файла!)
+        if (currentGrowth >= 100f) return;
+
+        // 1. Температура
         float tempDiff = Mathf.Abs(currentTemperature - currentPlant.optimalTemp);
         if (tempDiff > currentPlant.tempRange) currentHealth -= 5f * Time.deltaTime;
 
@@ -40,7 +50,7 @@ public class PlantPot : MonoBehaviour
         }
         else
         {
-            currentHealth -= 10f * Time.deltaTime;
+            currentHealth -= 1f * Time.deltaTime;// поменял для теста (было 10f)
         }
 
         currentWater = Mathf.Clamp(currentWater, 0, maxWater);
@@ -49,32 +59,67 @@ public class PlantPot : MonoBehaviour
         if (currentHealth <= 0) Die();
     }
 
-    public void Interact(PlayerInventory inventory)
+    public PlantActionType Interact(PlayerInventory inventory)
     {
         if (isDead)
         {
             ClearPot();
-            return;
+            return PlantActionType.Clear;
+        }
+
+        // --- НОВАЯ ЛОГИКА: СБОР УРОЖАЯ ---
+        // Если на грядке что-то есть и оно выросло на 100%
+        if (currentPlant != null && currentGrowth >= 100f)
+        {
+            Harvest(inventory);
+           return PlantActionType.Harvest; // Завершаем взаимодействие, чтобы не сработал полив или посадка
         }
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
-        if (activeSlot.IsEmpty) return; // Руки пусты
+        // Если руки пусты и сбор не сработал выше — ничего не делаем
+        if (activeSlot.IsEmpty) return PlantActionType.None;
 
-        // 1. Поливаем, если в руках инструмент-лейка
+        // 1. Поливаем (инструментом)
         if (activeSlot.item.isTool)
         {
             currentWater = maxWater;
             Debug.Log("Полито!");
-            return;
+            return PlantActionType.Water;
         }
 
-        // 2. Сажаем, если грядка пуста, а в руках семена (PlantData)
+        // 2. Сажаем
         if (currentPlant == null && activeSlot.item is PlantData)
         {
             PlantData seedData = (PlantData)activeSlot.item;
             Plant(seedData);
+            inventory.ConsumeSelectedItem();
+            return PlantActionType.Plant;
+        }
+        return PlantActionType.None;
+    }
 
-            inventory.ConsumeSelectedItem(); // Отнимаем 1 семечко из стака!
+    private void Harvest(PlayerInventory inventory)
+    {
+        if (currentPlant.harvestResult != null)
+        {
+            // Пытаемся добавить предмет в инвентарь
+            int leftover = inventory.AddItem(currentPlant.harvestResult, currentPlant.harvestAmount);
+
+            if (leftover == 0)
+            {
+                Debug.Log($"Собрано: {currentPlant.harvestResult.itemName}");
+                ClearPot(); // Грядка снова пуста и готова к посадке
+            }
+            else
+            {
+                // Если leftover > 0, значит инвентарь забился
+                Debug.Log("Инвентарь полон! Освободите место для урожая.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"У {currentPlant.itemName} не настроен harvestResult!");
+            ClearPot();
         }
     }
 
