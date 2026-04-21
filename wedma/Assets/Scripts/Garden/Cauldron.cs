@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections; 
+using System.Collections;
 using System.Collections.Generic;
 using Invector.vCharacterController;
 
@@ -11,27 +11,35 @@ public class Cauldron : MonoBehaviour
     [Header("Интерфейс")]
     public GameObject cauldronUIPanel;
     public SlotUI[] uiSlots;
-    public Button brewButton;
+    public UnityEngine.UI.Image progressBar; 
 
     [Header("Внутренние карманы Котла")]
     public InventorySlot[] slots = new InventorySlot[3];
 
     [Header("База Рецептов")]
     public List<RecipeData> allRecipes;
-    private RecipeData validRecipe;
+    public RecipeData validRecipe;
 
-    [Header("Камеры (ВАЖНО)")]
+    [Header("Варка (Мешалка)")]
+    public Transform potionSpawnPoint;
+    public Transform spoonBone;
+    public float requiredStirs = 3f;
+    private float currentStirProgress = 0f;
+    private float lastMouseAngle = 0f;
+    private bool isStirring = false;
+
+    [Header("Камеры (ВАЖНО)")] 
     public GameObject playerCameraObj;
     public GameObject cauldronCameraObj;
-    public float transitionTime = 1.0f; 
+    public float transitionTime = 1.0f;
 
     [Header("Настройки Игрока")]
     public vThirdPersonInput playerMovementScript;
+    public WitchInteraction playerInteractionScript;
 
     private bool isPlayerNear = false;
     public static bool isCauldronOpen = false;
 
-    // Внутренние переменные для полета
     private Vector3 cauldronTargetPos;
     private Quaternion cauldronTargetRot;
     private Coroutine transitionRoutine;
@@ -44,23 +52,25 @@ public class Cauldron : MonoBehaviour
 
     void Start()
     {
-        if (brewButton != null) brewButton.onClick.AddListener(BrewPotion);
-
-        // На старте ЗАПОМИНАЕМ ту самую идеальную позицию камеры котла
         if (cauldronCameraObj != null)
         {
             cauldronTargetPos = cauldronCameraObj.transform.position;
             cauldronTargetRot = cauldronCameraObj.transform.rotation;
             cauldronCameraObj.SetActive(false);
         }
+        if (progressBar != null) progressBar.fillAmount = 0f;
     }
 
     void Update()
     {
-        // Не даем нажать E, пока камера летит (чтобы не сломать анимацию)
         if (isPlayerNear && Input.GetKeyDown(KeyCode.E) && transitionRoutine == null)
         {
             ToggleCauldron();
+        }
+
+        if (isCauldronOpen && transitionRoutine == null)
+        {
+            HandleStirring();
         }
     }
 
@@ -68,24 +78,24 @@ public class Cauldron : MonoBehaviour
     {
         isCauldronOpen = !isCauldronOpen;
 
-        // Включаем/выключаем скрипт ходьбы и мышь сразу же
         if (isCauldronOpen)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             if (playerMovementScript != null) playerMovementScript.enabled = false;
+            // НОВОЕ: Выключаем возможность подбирать предметы!
+            if (playerInteractionScript != null) playerInteractionScript.enabled = false;
         }
         else
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            if (playerMovementScript != null) playerMovementScript.enabled = true;
+            // Включать скрипты здесь НЕ НАДО, они включатся после полета камеры
         }
 
         if (InventoryUIManager.instance != null)
             InventoryUIManager.instance.SetMechanicMode(isCauldronOpen);
 
-        // Запускаем плавный полет камеры!
         transitionRoutine = StartCoroutine(MoveCameraRoutine(isCauldronOpen));
     }
 
@@ -114,15 +124,15 @@ public class Cauldron : MonoBehaviour
         }
         else
         {
-            // 1. Прячем UI перед отлетом
             if (cauldronUIPanel != null) cauldronUIPanel.SetActive(false);
 
-            // 2. Летим обратно за спину (в позицию камеры Invector)
             yield return StartCoroutine(LerpCamera(playerCameraObj.transform.position, playerCameraObj.transform.rotation));
 
-            // 3. Возвращаем глаза игроку
             cauldronCameraObj.SetActive(false);
             playerCameraObj.SetActive(true);
+
+            if (playerMovementScript != null) playerMovementScript.enabled = true;
+            if (playerInteractionScript != null) playerInteractionScript.enabled = true;
         }
 
         transitionRoutine = null;
@@ -178,8 +188,6 @@ public class Cauldron : MonoBehaviour
                 break;
             }
         }
-
-        if (brewButton != null) brewButton.interactable = (validRecipe != null);
     }
 
     private bool IsRecipeMatch(RecipeData recipe)
@@ -187,7 +195,7 @@ public class Cauldron : MonoBehaviour
         int matchesFound = 0;
         int itemsInCauldron = 0;
 
-        for (int i = 0; i < 2; i++) 
+        for (int i = 0; i < 2; i++)
         {
             if (!slots[i].IsEmpty) itemsInCauldron++;
         }
@@ -214,37 +222,49 @@ public class Cauldron : MonoBehaviour
         return matchesFound == recipe.ingredients.Count;
     }
 
-    // Эта функция вызывается при нажатии на кнопку "Сварить"
-    public void BrewPotion()
+    private void CompleteBrewing()
     {
-        if (validRecipe == null) return;
+        isStirring = false;
+        currentStirProgress = 0f;
+        if (progressBar != null) progressBar.fillAmount = 0f;
 
-        // 1. Сжигаем ингредиенты
-        foreach (var required in validRecipe.ingredients)
+        // Ищем рецепт (твоя старая функция)
+        CheckRecipe();
+
+        if (validRecipe != null && validRecipe.resultPotion != null)
         {
-            for (int i = 0; i < 2; i++)
+            Debug.Log("УСПЕХ! Сварено: " + validRecipe.resultPotion.itemName);
+
+            if (validRecipe.resultPotion.dropPrefab != null)
             {
-                if (slots[i].item == required.item)
+                Vector3 spawnPos = potionSpawnPoint != null ? potionSpawnPoint.position : cauldronCameraObj.transform.position + cauldronCameraObj.transform.forward * 1.5f;
+
+                GameObject potion = Instantiate(validRecipe.resultPotion.dropPrefab, spawnPos, Quaternion.identity);
+
+                Rigidbody rb = potion.GetComponent<Rigidbody>();
+                if (rb != null)
                 {
-                    slots[i].count -= required.amount;
-                    if (slots[i].count <= 0) slots[i].Clear();
-                    break;
+                    rb.linearVelocity = Vector3.zero; 
+                    rb.useGravity = false;   
+                    rb.isKinematic = true;      
                 }
+
+                PickupItem pickup = potion.GetComponent<PickupItem>();
+                if (pickup == null) pickup = potion.AddComponent<PickupItem>();
+                pickup.itemData = validRecipe.resultPotion;
             }
         }
-
-        // 2. Создаем зелье в 4-й ячейке
-        if (slots[2].IsEmpty)
+        else
         {
-            slots[2].item = validRecipe.resultPotion;
-            slots[2].count = validRecipe.resultAmount;
-        }
-        else if (slots[2].item == validRecipe.resultPotion)
-        {
-            slots[2].count += validRecipe.resultAmount; // Складываем в стак, если такое зелье там уже лежит
+            Debug.Log("БУЛЬК! Получилась какая-то бурда. Ингредиенты сгорели.");
         }
 
-        // Обновляем картинки
+        for (int i = 0; i < 2; i++)
+        {
+            slots[i].item = null;
+            slots[i].count = 0;
+        }
+        validRecipe = null;
         UpdateUI();
     }
 
@@ -259,6 +279,53 @@ public class Cauldron : MonoBehaviour
         {
             isPlayerNear = false;
             if (isCauldronOpen) ToggleCauldron();
+        }
+    }
+
+    private void HandleStirring()
+    {
+        bool hasIngredients = !slots[0].IsEmpty || !slots[1].IsEmpty;
+
+        if (!hasIngredients || SlotUI.draggedSlot != null) return;
+
+        Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        Vector2 mouseDir = (Vector2)Input.mousePosition - screenCenter;
+        float currentAngle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
+
+        // Начинаем мешать при зажатии Левой Кнопки Мыши
+        if (Input.GetMouseButtonDown(0))
+        {
+            isStirring = true;
+            lastMouseAngle = currentAngle;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            isStirring = false;
+        }
+
+        // Математика кручения
+        if (isStirring)
+        {
+            float deltaAngle = Mathf.DeltaAngle(lastMouseAngle, currentAngle);
+
+            currentStirProgress += Mathf.Abs(deltaAngle);
+            lastMouseAngle = currentAngle;
+
+            // Если есть ложка - крутим её!
+            if (spoonBone != null)
+            {
+                spoonBone.Rotate(Vector3.up, deltaAngle, Space.Self);
+            }
+
+            if (progressBar != null)
+            {
+                progressBar.fillAmount = currentStirProgress / (requiredStirs * 360f);
+            }
+
+            if (currentStirProgress >= requiredStirs * 360f)
+            {
+                CompleteBrewing();
+            }
         }
     }
 }

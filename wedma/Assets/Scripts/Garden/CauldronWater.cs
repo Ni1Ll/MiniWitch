@@ -8,27 +8,29 @@ public class CauldronWater : MonoBehaviour
 
         if (droppedItem != null && droppedItem.itemData != null)
         {
+
+            if (droppedItem.itemData is PotionData)
+            {
+                return; // Прерываем код, вода ничего не делает
+            }
+
             for (int i = 0; i < 2; i++)
             {
                 if (Cauldron.instance.slots[i].IsEmpty)
                 {
-                    // Записываем данные предмета в память котла
                     Cauldron.instance.slots[i].item = droppedItem.itemData;
                     Cauldron.instance.slots[i].count = 1;
 
                     Debug.Log("Бульк! В котел растворился: " + droppedItem.itemData.itemName);
 
-                    // Уничтожаем физический префаб (он утонул и растворился)
                     Destroy(other.gameObject);
 
-                    // Дергаем котел, чтобы он проверил рецепт!
                     Cauldron.instance.UpdateUI();
-                    return; // Выходим из цикла, чтобы предмет не лег сразу в оба слота
+                    return;
                 }
             }
 
             Debug.Log("Котел уже полон!");
-
         }
     }
 }

@@ -65,6 +65,7 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
     {
         if (InventoryUI.instance != null) InventoryUI.instance.StopDrag();
 
+        // Защита: не выбрасываем предмет, если просто перетаскиваем его в другой слот
         bool isPointerOverUI = eventData.pointerEnter != null && eventData.pointerEnter.GetComponent<SlotUI>() != null;
 
         if (!isPointerOverUI && Cauldron.isCauldronOpen && currentSlot != null && !currentSlot.IsEmpty && !isResultSlot)
@@ -72,38 +73,29 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
             Camera activeCam = Cauldron.instance.cauldronCameraObj.GetComponent<Camera>();
             Ray ray = activeCam.ScreenPointToRay(Input.mousePosition);
 
-            RaycastHit[] hits = Physics.RaycastAll(ray);
-
-            foreach (RaycastHit hit in hits)
+            if (currentSlot.item.dropPrefab != null)
             {
-                // Ищем среди пробитых объектов нашу воду
-                if (hit.collider.CompareTag("CauldronWater"))
+                float dropDistance = 1.0f;
+
+                // Берем точку прямо в воздухе, куда указывает мышка
+                Vector3 spawnPos = ray.GetPoint(dropDistance);
+
+                // Роняем предмет!
+                GameObject droppedObj = Instantiate(currentSlot.item.dropPrefab, spawnPos, Quaternion.identity);
+
+                PickupItem pickup = droppedObj.GetComponent<PickupItem>();
+                if (pickup == null) pickup = droppedObj.AddComponent<PickupItem>();
+                pickup.itemData = currentSlot.item;
+
+                // Списываем из инвентаря
+                currentSlot.count--;
+                if (currentSlot.count <= 0)
                 {
-                    if (currentSlot.item.dropPrefab != null)
-                    {
-                        // Спавним на 0.5 метра ВЫШЕ точки попадания
-                        Vector3 spawnPos = hit.point + new Vector3(0, 0.5f, 0);
-                        GameObject droppedObj = Instantiate(currentSlot.item.dropPrefab, spawnPos, Quaternion.identity);
-
-                        // Накидываем память предмету
-                        PickupItem pickup = droppedObj.GetComponent<PickupItem>();
-                        if (pickup == null) pickup = droppedObj.AddComponent<PickupItem>();
-                        pickup.itemData = currentSlot.item;
-
-                        // Списываем из инвентаря
-                        currentSlot.count--;
-                        if (currentSlot.count <= 0)
-                        {
-                            currentSlot.item = null;
-                            currentSlot.count = 0;
-                        }
-
-                        // Обновляем картинки
-                        if (InventoryUI.instance != null) InventoryUI.instance.UpdateAllSlots();
-                    }
-
-                    break; // Воду нашли, префаб кинули — прекращаем цикл!
+                    currentSlot.item = null;
+                    currentSlot.count = 0;
                 }
+
+                if (InventoryUI.instance != null) InventoryUI.instance.UpdateAllSlots();
             }
         }
 

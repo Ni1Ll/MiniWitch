@@ -149,25 +149,32 @@ public class vThirdPersonCamera : MonoBehaviour
     /// </summary>    
     void CameraMovement()
     {
-        if (currentTarget == null)
-            return;
+        if (currentTarget == null) return;
 
+        // 1. Стандартный расчет дистанции
         distance = Mathf.Lerp(distance, defaultDistance, smoothFollow * Time.deltaTime);
         cullingDistance = Mathf.Lerp(cullingDistance, distance, Time.deltaTime);
-        var camDir = (forward * targetLookAt.forward) + (rightOffset * targetLookAt.right);
 
-        camDir = camDir.normalized;
+        // 2. Базовое вращение (строго за спиной, как было в оригинале)
+        Quaternion lookAtRotation = Quaternion.Euler(mouseY, mouseX, 0);
+        targetLookAt.rotation = Quaternion.Slerp(targetLookAt.rotation, lookAtRotation, smoothCameraRotation * Time.deltaTime);
 
+        // 3. Базовые позиции (pivot)
         var targetPos = new Vector3(currentTarget.position.x, currentTarget.position.y + offSetPlayerPivot, currentTarget.position.z);
         currentTargetPos = targetPos;
         desired_cPos = targetPos + new Vector3(0, height, 0);
         current_cPos = currentTargetPos + new Vector3(0, currentHeight, 0);
-        RaycastHit hitInfo;
 
-        ClipPlanePoints planePoints = _camera.NearClipPlanePoints(current_cPos + (camDir * (distance)), clipPlaneMargin);
+        targetLookAt.position = current_cPos;
+
+        // Направление "назад" от персонажа
+        Vector3 camDir = targetLookAt.forward * forward; // forward обычно -1
+
+        // 4. Проверка коллизий (оригинальная логика Invector)
+        RaycastHit hitInfo;
+        ClipPlanePoints planePoints = _camera.NearClipPlanePoints(current_cPos + (camDir * distance), clipPlaneMargin);
         ClipPlanePoints oldPoints = _camera.NearClipPlanePoints(desired_cPos + (camDir * distance), clipPlaneMargin);
 
-        //Check if Height is not blocked 
         if (Physics.SphereCast(targetPos, checkHeightRadius, Vector3.up, out hitInfo, cullingHeight + 0.2f, cullingLayer))
         {
             var t = hitInfo.distance - 0.2f;
@@ -176,7 +183,6 @@ public class vThirdPersonCamera : MonoBehaviour
             cullingHeight = Mathf.Lerp(height, cullingHeight, Mathf.Clamp(t, 0.0f, 1.0f));
         }
 
-        //Check if desired target position is not blocked       
         if (CullingRayCast(desired_cPos, oldPoints, out hitInfo, distance + 0.2f, cullingLayer, Color.blue))
         {
             distance = hitInfo.distance - 0.2f;
@@ -193,18 +199,21 @@ public class vThirdPersonCamera : MonoBehaviour
         {
             currentHeight = height;
         }
-        //Check if target position with culling height applied is not blocked
-        if (CullingRayCast(current_cPos, planePoints, out hitInfo, distance, cullingLayer, Color.cyan)) distance = Mathf.Clamp(cullingDistance, 0.0f, defaultDistance);
-        var lookPoint = current_cPos + targetLookAt.forward * 2f;
-        lookPoint += (targetLookAt.right * Vector3.Dot(camDir * (distance), targetLookAt.right));
-        targetLookAt.position = current_cPos;
 
-        Quaternion newRot = Quaternion.Euler(mouseY, mouseX, 0);
-        targetLookAt.rotation = Quaternion.Slerp(targetLookAt.rotation, newRot, smoothCameraRotation * Time.deltaTime);
-        transform.position = current_cPos + (camDir * (distance));
-        var rotation = Quaternion.LookRotation((lookPoint) - transform.position);
+        if (CullingRayCast(current_cPos, planePoints, out hitInfo, distance, cullingLayer, Color.cyan))
+            distance = Mathf.Clamp(cullingDistance, 0.0f, defaultDistance);
 
-        transform.rotation = rotation;
+        // 5. УСТАНОВКА ПОЗИЦИИ И ПОВОРОТА
+        // Сначала ставим камеру идеально по радиусу за спиной
+        transform.position = current_cPos + (camDir * distance);
+        transform.rotation = targetLookAt.rotation;
+
+        // 6. ВОТ ЗДЕСЬ МЫ ДВИГАЕМ КАМЕРУ ВБОК (Независимо от игрока)
+        // Мы берем локальную ось "право" самой камеры и прибавляем смещение
+        // Это не меняет дистанцию до центра, а просто двигает всю картинку
+        transform.position += transform.right * rightOffset;
+        transform.LookAt(current_cPos + targetLookAt.forward * 2f);
+
         movementSpeed = Vector2.zero;
     }
 

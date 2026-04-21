@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 106427524622777698}
   - component: {fileID: 6726590024067576867}
   - component: {fileID: 3984132689764486644}
+  - component: {fileID: -5914647919054040361}
   - component: {fileID: 2272399851866708638}
   m_Layer: 0
   m_Name: Bodiaga
@@ -125,6 +126,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: df7d6d5cf8e1ec54ca248a92f7feb903, type: 2}
+--- !u!114 &-5914647919054040361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4100107508029337535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1139c5f7ebe4014184152fa69bf5965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  amplitude: 0.08
+  speed: 2
+  rotationSpeed: 40
 --- !u!54 &2272399851866708638
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -150,5 +166,5 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 80
   m_CollisionDetection: 0

@@ -1,12 +1,13 @@
 using UnityEngine;
+using System.Collections; // Добавлено для работы корутин
 
 public class WitchInteraction : MonoBehaviour
 {
     public Animator animator;
-    [Header("���������")]
+    [Header("Настройки")]
     public float interactionRadius = 2.5f;
 
-    [Header("������ � ����")]
+    [Header("Слот в руке")]
     public Transform handSocket;
 
     private PlayerInventory inventory;
@@ -30,19 +31,16 @@ public class WitchInteraction : MonoBehaviour
     {
         int oldIndex = inventory.selectedHotbarIndex;
 
-        // �������� ����
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (scroll > 0f) inventory.ChangeSelectedSlot(-1);
         else if (scroll < 0f) inventory.ChangeSelectedSlot(1);
 
-        // ����� 1-5
         if (Input.GetKeyDown(KeyCode.Alpha1)) inventory.selectedHotbarIndex = 0;
         if (Input.GetKeyDown(KeyCode.Alpha2)) inventory.selectedHotbarIndex = 1;
         if (Input.GetKeyDown(KeyCode.Alpha3)) inventory.selectedHotbarIndex = 2;
         if (Input.GetKeyDown(KeyCode.Alpha4)) inventory.selectedHotbarIndex = 3;
         if (Input.GetKeyDown(KeyCode.Alpha5)) inventory.selectedHotbarIndex = 4;
 
-        // ���� ����������� ���� � ��������� �������� � ���� � �������� � UI
         if (oldIndex != inventory.selectedHotbarIndex)
         {
             UpdateHandVisuals();
@@ -61,24 +59,21 @@ public class WitchInteraction : MonoBehaviour
             {
                 PlantActionType action = pot.Interact(inventory);
 
-                if(animator != null)
+                if (animator != null)
                 {
-                    switch(action)
+                    switch (action)
                     {
                         case PlantActionType.Water:
                             animator.SetTrigger("Water");
                             break;
-
                         case PlantActionType.Plant:
                             animator.SetTrigger("Plant");
                             break;
-
                         case PlantActionType.Harvest:
                             animator.SetTrigger("Harvest");
                             break;
                     }
                 }
-
                 UpdateHandVisuals();
                 return;
             }
@@ -97,38 +92,52 @@ public class WitchInteraction : MonoBehaviour
                     {
                         animator.SetTrigger("Pickup");
                     }
-                    Destroy(item.gameObject);
-                    UpdateHandVisuals();
-                    Debug.Log($"���������: {item.itemData.itemName}");
+
+                    Collider itemCol = item.GetComponent<Collider>();
+                    if (itemCol != null) itemCol.enabled = false;
+
+                    Rigidbody itemRb = item.GetComponent<Rigidbody>();
+                    if (itemRb != null)
+                    {
+                        itemRb.isKinematic = true;
+                    }
+
+                    StartCoroutine(DelayedPickup(1.0f, item.gameObject));
+
+                    Debug.Log($"Подготовка к подбору: {item.itemData.itemName}");
                 }
-                else Debug.Log("��������� �����!");
+                else Debug.Log("Инвентарь полон!");
                 return;
             }
         }
-    }
+    } // Скобка, закрывающая TryInteract
 
     void DropItem()
     {
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (activeSlot.IsEmpty) return;
 
-        Vector3 dropPos = transform.position + transform.forward * 1.0f + Vector3.up * 0.5f;
+        Vector3 dropPos = transform.position + transform.forward * 0.3f + Vector3.up * 0.6f;
 
         if (activeSlot.item.dropPrefab != null)
         {
-            GameObject droppedObj = Instantiate(activeSlot.item.dropPrefab, dropPos, Quaternion.identity);
+            GameObject droppedObj = Instantiate(activeSlot.item.dropPrefab, dropPos, transform.rotation);
             PickupItem pickup = droppedObj.GetComponent<PickupItem>();
             if (pickup != null) pickup.itemData = activeSlot.item;
+
+            Rigidbody rb = droppedObj.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                Vector3 dropForce = (transform.forward * 1.2f) + (Vector3.up * 1.0f);
+                rb.AddForce(dropForce, ForceMode.Impulse);
+            }
         }
 
         inventory.ConsumeSelectedItem();
-
-        // ���� ��� ��� ����������, ������� ���� ��������� ��� �������
         if (activeSlot.item != null && activeSlot.item.isTool) activeSlot.Clear();
 
         UpdateHandVisuals();
-
-        // ��������� �������� UI ����� �������
         if (inventory.ui != null) inventory.ui.UpdateAllSlots();
     }
 
@@ -145,10 +154,28 @@ public class WitchInteraction : MonoBehaviour
         {
             currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
 
+            Rigidbody rb = currentSpawnedModel.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.detectCollisions = false;
+            }
+
             currentSpawnedModel.transform.localPosition = Vector3.zero;
             currentSpawnedModel.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
-            currentSpawnedModel.transform.localScale = Vector3.one * 0.01f; // 👈 ВОТ ЭТО ДОБАВИЛ
+            currentSpawnedModel.transform.localScale = Vector3.one * 0.01f;
         }
     }
-    
+
+    private IEnumerator DelayedPickup(float delay, GameObject worldItem)
+    {
+        yield return new WaitForSeconds(delay);
+
+        UpdateHandVisuals();
+
+        if (worldItem != null)
+        {
+            Destroy(worldItem);
+        }
+    }
 }
