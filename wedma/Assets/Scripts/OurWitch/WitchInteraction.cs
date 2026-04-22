@@ -184,15 +184,24 @@ public class WitchInteraction : MonoBehaviour
         if (item != null && item.itemData != null)
         {
             int leftover = inventory.AddItem(item.itemData, 1);
+
             if (leftover == 0)
             {
                 if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+
                 if (animator != null) animator.SetTrigger("Pickup");
+
                 Collider itemCol = item.GetComponent<Collider>();
                 if (itemCol != null) itemCol.enabled = false;
+
                 Rigidbody itemRb = item.GetComponent<Rigidbody>();
                 if (itemRb != null) itemRb.isKinematic = true;
-                StartCoroutine(DelayedPickup(1.0f, item.gameObject));
+
+                StartCoroutine(DelayedPickup(1.0f, item.gameObject, item.itemData));
+            }
+            else
+            {
+                Debug.Log("Инвентарь полон!");
             }
         }
     }
@@ -264,10 +273,33 @@ public class WitchInteraction : MonoBehaviour
         }
     }
 
-    private IEnumerator DelayedPickup(float delay, GameObject worldItem)
+    private IEnumerator DelayedPickup(float delay, GameObject worldItem, ItemData pickedData)
     {
         yield return new WaitForSeconds(delay);
-        UpdateHandVisuals();
+
+        ShowSpecificItemInHand(pickedData);
+
         if (worldItem != null) Destroy(worldItem);
+    }
+
+    private void ShowSpecificItemInHand(ItemData data)
+    {
+        if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+
+        if (data != null && data.handVisualPrefab != null && handSocket != null)
+        {
+            currentSpawnedModel = Instantiate(data.handVisualPrefab, handSocket);
+
+            Rigidbody rb = currentSpawnedModel.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.detectCollisions = false;
+            }
+
+            currentSpawnedModel.transform.localPosition = Vector3.zero;
+            currentSpawnedModel.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
+            currentSpawnedModel.transform.localScale = Vector3.one * 0.01f;
+        }
     }
 }

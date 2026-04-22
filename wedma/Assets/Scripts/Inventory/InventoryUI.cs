@@ -17,7 +17,6 @@ public class InventoryUI : MonoBehaviour
     public Image dragIcon;
 
     private bool isInventoryOpen = false; // Состояние "открыто на Q"
-    private bool isMechanicActive = false; // Состояние "открыт котел"
 
     void Awake()
     {
@@ -44,27 +43,18 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    public void SetMechanicMode(bool isActive)
+    public void UpdateUIVisibility()
     {
-        isMechanicActive = isActive;
-        // При закрытии котла, если инвентарь на Q не был открыт, всё закроется
-        UpdateUIVisibility();
-    }
+        bool isCauldronActive = Cauldron.isCauldronOpen;
 
-    private void UpdateUIVisibility()
-    {
-        // 1. ХОТБАР показываем, если нажат Q ИЛИ если мы у котла
-        bool showHotbar = isInventoryOpen || isMechanicActive;
+        bool showHotbar = isInventoryOpen || isCauldronActive;
         if (hotbarPanel != null) hotbarPanel.SetActive(showHotbar);
 
-        // 2. ОСНОВНОЕ МЕНЮ показываем ТОЛЬКО если нажат Q
         if (mainInventoryPanel != null) mainInventoryPanel.SetActive(isInventoryOpen);
 
-        // 3. ТУЛТИПЫ показываем, если хоть что-то открыто
-        if (tooltipPanel != null) tooltipPanel.SetActive(showHotbar || isInventoryOpen);
+        if (tooltipPanel != null) tooltipPanel.SetActive(showHotbar);
 
-        // Управление курсором
-        if (showHotbar || isInventoryOpen)
+        if (showHotbar)
         {
             UpdateAllSlots();
             Cursor.visible = true;
@@ -72,7 +62,6 @@ public class InventoryUI : MonoBehaviour
         }
         else
         {
-            // Закрываем всё, только если и котел закрыт, и Q не нажат
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
             StopDrag();

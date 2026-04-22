@@ -9,8 +9,6 @@ public class Cauldron : MonoBehaviour
     public static Cauldron instance;
 
     [Header("Интерфейс")]
-    public GameObject cauldronUIPanel;
-    public SlotUI[] uiSlots;
     public UnityEngine.UI.Image progressBar;
 
     [Header("Внутренние карманы Котла")]
@@ -87,22 +85,14 @@ public class Cauldron : MonoBehaviour
 
         if (isCauldronOpen)
         {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
             if (playerMovementScript != null) playerMovementScript.enabled = false;
             if (playerInteractionScript != null) playerInteractionScript.enabled = false;
             if (progressBar != null) progressBar.transform.parent.gameObject.SetActive(true);
             if (witchVisualModel != null) witchVisualModel.SetActive(false);
         }
-        else
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            if (progressBar != null) progressBar.transform.parent.gameObject.SetActive(false);
-        }
 
         if (InventoryUI.instance != null)
-            InventoryUI.instance.SetMechanicMode(isCauldronOpen);
+            InventoryUI.instance.UpdateUIVisibility();
 
         transitionRoutine = StartCoroutine(MoveCameraRoutine(isCauldronOpen));
     }
@@ -123,17 +113,10 @@ public class Cauldron : MonoBehaviour
             // 3. Летим к жиже
             yield return StartCoroutine(LerpCamera(cauldronTargetPos, cauldronTargetRot));
 
-            // 4. Показываем UI только когда прилетели
-            if (cauldronUIPanel != null)
-            {
-                cauldronUIPanel.SetActive(true);
-                UpdateUI();
-            }
+            // 4. Показываем UI только когда прилетели (удалено, так как UI больше нет)
         }
         else
         {
-            if (cauldronUIPanel != null) cauldronUIPanel.SetActive(false);
-
             yield return StartCoroutine(LerpCamera(playerCameraObj.transform.position, playerCameraObj.transform.rotation));
 
             cauldronCameraObj.SetActive(false);
@@ -171,19 +154,6 @@ public class Cauldron : MonoBehaviour
         cauldronCameraObj.transform.rotation = targetRot;
     }
 
-    public void UpdateUI()
-    {
-        for (int i = 0; i < uiSlots.Length; i++)
-        {
-            if (uiSlots[i] != null) uiSlots[i].UpdateSlot(slots[i], false);
-        }
-
-        // Каждый раз, когда предметы в котле двигаются, проверяем рецепт!
-        CheckRecipe();
-    }
-
-    // --- ЛОГИКА АЛХИМИИ ---
-
     private void CheckRecipe()
     {
         validRecipe = null;
@@ -204,7 +174,7 @@ public class Cauldron : MonoBehaviour
         int matchesFound = 0;
         int itemsInCauldron = 0;
 
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < slots.Length; i++)
         {
             if (!slots[i].IsEmpty) itemsInCauldron++;
         }
@@ -274,7 +244,6 @@ public class Cauldron : MonoBehaviour
             slots[i].count = 0;
         }
         validRecipe = null;
-        UpdateUI();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -289,6 +258,22 @@ public class Cauldron : MonoBehaviour
             isPlayerNear = false;
             if (isCauldronOpen) ToggleCauldron();
         }
+    }
+
+    public bool TryPutIngredient(ItemData newItem)
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i].IsEmpty)
+            {
+                slots[i].item = newItem;
+                slots[i].count = 1;
+
+                CheckRecipe(); // Сразу проверяем, не собрался ли рецепт
+                return true;
+            }
+        }
+        return false; // Если все 3 места заняты
     }
 
     private void HandleStirring()
@@ -334,8 +319,16 @@ public class Cauldron : MonoBehaviour
             isStirring = false;
         }
 
-        // 2. ПРОВЕРЯЕМ ИНГРЕДИЕНТЫ
-        bool hasIngredients = !slots[0].IsEmpty || !slots[1].IsEmpty;
+        // 2. ПРОВЕРЯЕМ ИНГРЕДИЕНТЫ (Во всех карманах)
+        bool hasIngredients = false;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (!slots[i].IsEmpty)
+            {
+                hasIngredients = true;
+                break;
+            }
+        }
 
         if (!hasIngredients)
         {
