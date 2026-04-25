@@ -100,8 +100,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe41004f0c865924897504a201151f93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  plantVisual: {fileID: 0}
-  growthSpeed: 10
+  currentWater: 0
+  maxWater: 100
+  currentTemperature: 20
+  currentPlant: {fileID: 0}
+  currentGrowth: 0
+  currentHealth: 100
+  isDead: 0
 --- !u!136 &6763856602051568551
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -9,9 +9,7 @@ public class Cauldron : MonoBehaviour
     public static Cauldron instance;
 
     [Header("Интерфейс")]
-    public GameObject cauldronUIPanel;
-    public SlotUI[] uiSlots;
-    public UnityEngine.UI.Image progressBar; 
+    public UnityEngine.UI.Image progressBar;
 
     [Header("Внутренние карманы Котла")]
     public InventorySlot[] slots = new InventorySlot[3];
@@ -24,11 +22,12 @@ public class Cauldron : MonoBehaviour
     public Transform potionSpawnPoint;
     public Transform spoonBone;
     public float requiredStirs = 3f;
+    public float stirDecayRate = 120f;
     private float currentStirProgress = 0f;
     private float lastMouseAngle = 0f;
     private bool isStirring = false;
 
-    [Header("Камеры (ВАЖНО)")] 
+    [Header("Камеры (ВАЖНО)")]
     public GameObject playerCameraObj;
     public GameObject cauldronCameraObj;
     public float transitionTime = 1.0f;
@@ -43,6 +42,7 @@ public class Cauldron : MonoBehaviour
     private Vector3 cauldronTargetPos;
     private Quaternion cauldronTargetRot;
     private Coroutine transitionRoutine;
+    public GameObject witchVisualModel;
 
     void Awake()
     {
@@ -58,7 +58,12 @@ public class Cauldron : MonoBehaviour
             cauldronTargetRot = cauldronCameraObj.transform.rotation;
             cauldronCameraObj.SetActive(false);
         }
-        if (progressBar != null) progressBar.fillAmount = 0f;
+
+        if (progressBar != null)
+        {
+            progressBar.fillAmount = 0f;
+            progressBar.transform.parent.gameObject.SetActive(false);
+        }
     }
 
     void Update()
@@ -80,21 +85,14 @@ public class Cauldron : MonoBehaviour
 
         if (isCauldronOpen)
         {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
             if (playerMovementScript != null) playerMovementScript.enabled = false;
-            // НОВОЕ: Выключаем возможность подбирать предметы!
             if (playerInteractionScript != null) playerInteractionScript.enabled = false;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            // Включать скрипты здесь НЕ НАДО, они включатся после полета камеры
+            if (progressBar != null) progressBar.transform.parent.gameObject.SetActive(true);
+            if (witchVisualModel != null) witchVisualModel.SetActive(false);
         }
 
-        if (InventoryUIManager.instance != null)
-            InventoryUIManager.instance.SetMechanicMode(isCauldronOpen);
+        if (InventoryUI.instance != null)
+            InventoryUI.instance.UpdateUIVisibility();
 
         transitionRoutine = StartCoroutine(MoveCameraRoutine(isCauldronOpen));
     }
@@ -115,17 +113,10 @@ public class Cauldron : MonoBehaviour
             // 3. Летим к жиже
             yield return StartCoroutine(LerpCamera(cauldronTargetPos, cauldronTargetRot));
 
-            // 4. Показываем UI только когда прилетели
-            if (cauldronUIPanel != null)
-            {
-                cauldronUIPanel.SetActive(true);
-                UpdateUI();
-            }
+            // 4. Показываем UI только когда прилетели (удалено, так как UI больше нет)
         }
         else
         {
-            if (cauldronUIPanel != null) cauldronUIPanel.SetActive(false);
-
             yield return StartCoroutine(LerpCamera(playerCameraObj.transform.position, playerCameraObj.transform.rotation));
 
             cauldronCameraObj.SetActive(false);
@@ -133,6 +124,7 @@ public class Cauldron : MonoBehaviour
 
             if (playerMovementScript != null) playerMovementScript.enabled = true;
             if (playerInteractionScript != null) playerInteractionScript.enabled = true;
+            if (witchVisualModel != null) witchVisualModel.SetActive(true);
         }
 
         transitionRoutine = null;
@@ -162,19 +154,6 @@ public class Cauldron : MonoBehaviour
         cauldronCameraObj.transform.rotation = targetRot;
     }
 
-    public void UpdateUI()
-    {
-        for (int i = 0; i < uiSlots.Length; i++)
-        {
-            if (uiSlots[i] != null) uiSlots[i].UpdateSlot(slots[i], false);
-        }
-
-        // Каждый раз, когда предметы в котле двигаются, проверяем рецепт!
-        CheckRecipe();
-    }
-
-    // --- ЛОГИКА АЛХИМИИ ---
-
     private void CheckRecipe()
     {
         validRecipe = null;
@@ -195,7 +174,7 @@ public class Cauldron : MonoBehaviour
         int matchesFound = 0;
         int itemsInCauldron = 0;
 
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < slots.Length; i++)
         {
             if (!slots[i].IsEmpty) itemsInCauldron++;
         }
@@ -244,9 +223,9 @@ public class Cauldron : MonoBehaviour
                 Rigidbody rb = potion.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
-                    rb.linearVelocity = Vector3.zero; 
-                    rb.useGravity = false;   
-                    rb.isKinematic = true;      
+                    rb.linearVelocity = Vector3.zero;
+                    rb.useGravity = false;
+                    rb.isKinematic = true;
                 }
 
                 PickupItem pickup = potion.GetComponent<PickupItem>();
@@ -265,7 +244,6 @@ public class Cauldron : MonoBehaviour
             slots[i].count = 0;
         }
         validRecipe = null;
-        UpdateUI();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -282,64 +260,117 @@ public class Cauldron : MonoBehaviour
         }
     }
 
+    public bool TryPutIngredient(ItemData newItem)
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i].IsEmpty)
+            {
+                slots[i].item = newItem;
+                slots[i].count = 1;
+
+                CheckRecipe(); // Сразу проверяем, не собрался ли рецепт
+                return true;
+            }
+        }
+        return false; // Если все 3 места заняты
+    }
+
     private void HandleStirring()
     {
-        bool hasIngredients = !slots[0].IsEmpty || !slots[1].IsEmpty;
+        // Защита: не кликаем, если тащим предмет в инвентаре
+        if (SlotUI.draggedSlot != null) return;
 
-        if (!hasIngredients || SlotUI.draggedSlot != null) return;
-
-        Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
-        Vector2 mouseDir = (Vector2)Input.mousePosition - screenCenter;
-        float currentAngle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
-
+        // 1. СНАЧАЛА ПРОВЕРЯЕМ КЛИКИ
         if (Input.GetMouseButtonDown(0))
         {
             Camera activeCam = cauldronCameraObj.GetComponent<Camera>();
             Ray ray = activeCam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray);
 
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            bool potionPickedUp = false;
+
+            foreach (var hit in hits)
             {
-                PickupItem item = hit.collider.GetComponent<PickupItem>();
+                PickupItem item = hit.collider.GetComponentInParent<PickupItem>();
                 if (item != null && item.itemData is PotionData)
                 {
                     int leftover = InventoryUI.instance.playerInventory.AddItem(item.itemData, 1);
                     if (leftover == 0)
                     {
-                        Debug.Log("Зелье забрано!");
                         Destroy(item.gameObject);
                         InventoryUI.instance.UpdateAllSlots();
-                        return; 
+                        potionPickedUp = true;
+                        break;
                     }
                 }
             }
 
+            if (potionPickedUp) return;
+
             isStirring = true;
-            lastMouseAngle = currentAngle;
+
+            Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            Vector2 mouseDir = (Vector2)Input.mousePosition - screenCenter;
+            lastMouseAngle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            isStirring = false;
         }
 
-        // Математика кручения
+        // 2. ПРОВЕРЯЕМ ИНГРЕДИЕНТЫ (Во всех карманах)
+        bool hasIngredients = false;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (!slots[i].IsEmpty)
+            {
+                hasIngredients = true;
+                break;
+            }
+        }
+
+        if (!hasIngredients)
+        {
+            isStirring = false;
+            return;
+        }
+
+        // 3. МАТЕМАТИКА КРУЧЕНИЯ
         if (isStirring)
         {
-            float deltaAngle = Mathf.DeltaAngle(lastMouseAngle, currentAngle);
+            Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            Vector2 mouseDir = (Vector2)Input.mousePosition - screenCenter;
+            float currentAngle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
 
+            float deltaAngle = Mathf.DeltaAngle(lastMouseAngle, currentAngle);
             currentStirProgress += Mathf.Abs(deltaAngle);
             lastMouseAngle = currentAngle;
 
-            // Если есть ложка - крутим её!
-            if (spoonBone != null)
-            {
-                spoonBone.Rotate(Vector3.up, deltaAngle, Space.Self);
-            }
-
-            if (progressBar != null)
-            {
-                progressBar.fillAmount = currentStirProgress / (requiredStirs * 360f);
-            }
-
-            if (currentStirProgress >= requiredStirs * 360f)
-            {
-                CompleteBrewing();
-            }
+            // --- ЗАМЕДЛЯЕМ ЛОЖКУ И КРУТИМ В ПРАВИЛЬНУЮ СТОРОНУ ---
+            // Обрати внимание на минус перед deltaAngle!
+            if (spoonBone != null) spoonBone.Rotate(Vector3.up, -deltaAngle * 0.6f, Space.Self);
         }
+
+        // 4. ОСТЫВАНИЕ (Работает всегда, когда котел не пуст)
+        if (currentStirProgress > 0f)
+        {
+            // Отнимаем прогресс каждую секунду
+            currentStirProgress -= stirDecayRate * Time.deltaTime;
+
+            // Чтобы шкала не ушла в минус
+            if (currentStirProgress < 0f) currentStirProgress = 0f;
+        }
+
+        // 5. ОБНОВЛЕНИЕ UI И ПРОВЕРКА ГОТОВНОСТИ
+        if (progressBar != null) progressBar.fillAmount = currentStirProgress / (requiredStirs * 360f);
+
+        if (currentStirProgress >= requiredStirs * 360f)
+        {
+            CompleteBrewing();
+        }
+
     }
+
 }
+

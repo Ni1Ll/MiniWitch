@@ -3,23 +3,24 @@ using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
-    public static InventoryUI instance; // Делаем скрипт доступным отовсюду
+    public static InventoryUI instance;
+
+    [Header("Панели")]
+    public GameObject hotbarPanel;
+    public GameObject mainInventoryPanel;
+    public GameObject tooltipPanel;
 
     [Header("Ссылки")]
     public PlayerInventory playerInventory;
-    public GameObject mainInventoryPanel;
-
-    [Header("Слоты интерфейса")]
     public SlotUI[] hotbarSlots;
     public SlotUI[] allSlots;
-
-    [Header("Перетаскивание (Drag & Drop)")]
     public Image dragIcon;
-    [HideInInspector] public bool isDragging = false;
+
+    private bool isInventoryOpen = false; // Состояние "открыто на Q"
 
     void Awake()
     {
-        instance = this; // Записываем себя в память при старте
+        instance = this;
     }
 
     void Start()
@@ -29,21 +30,41 @@ public class InventoryUI : MonoBehaviour
         for (int i = 0; i < hotbarSlots.Length; i++) hotbarSlots[i].Setup(i, this);
         for (int i = 0; i < allSlots.Length; i++) allSlots[i].Setup(i + hotbarSlots.Length, this);
 
-        if (mainInventoryPanel != null) mainInventoryPanel.SetActive(false);
-        UpdateAllSlots();
+        UpdateUIVisibility();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q) && !Cauldron.isCauldronOpen) ToggleInventory();
+        // Теперь Q работает ВСЕГДА (даже если котел открыт)
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            isInventoryOpen = !isInventoryOpen;
+            UpdateUIVisibility();
+        }
     }
 
-    void ToggleInventory()
+    public void UpdateUIVisibility()
     {
-        if (mainInventoryPanel != null)
+        bool isCauldronActive = Cauldron.isCauldronOpen;
+
+        bool showHotbar = isInventoryOpen || isCauldronActive;
+        if (hotbarPanel != null) hotbarPanel.SetActive(showHotbar);
+
+        if (mainInventoryPanel != null) mainInventoryPanel.SetActive(isInventoryOpen);
+
+        if (tooltipPanel != null) tooltipPanel.SetActive(showHotbar);
+
+        if (showHotbar)
         {
-            mainInventoryPanel.SetActive(!mainInventoryPanel.activeSelf);
             UpdateAllSlots();
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            StopDrag();
         }
     }
 
@@ -57,6 +78,7 @@ public class InventoryUI : MonoBehaviour
             hotbarSlots[i].UpdateSlot(playerInventory.slots[i], isSelected);
         }
 
+        // Обновляем ячейки основного инвентаря только если он активен
         if (mainInventoryPanel != null && mainInventoryPanel.activeSelf)
         {
             for (int i = 0; i < allSlots.Length; i++)
@@ -67,25 +89,15 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    // --- УПРОЩЕННАЯ ЛОГИКА ПЕРЕТАСКИВАНИЯ ---
     public void StartDrag(Sprite icon)
     {
+        if (dragIcon == null) return;
+        dragIcon.sprite = icon;
+        dragIcon.gameObject.SetActive(true);
         isDragging = true;
-        if (dragIcon != null)
-        {
-            dragIcon.sprite = icon;
-            dragIcon.gameObject.SetActive(true);
-        }
     }
 
-    public void UpdateDragPosition(Vector2 pos)
-    {
-        if (dragIcon != null) dragIcon.transform.position = pos;
-    }
-
-    public void StopDrag()
-    {
-        isDragging = false;
-        if (dragIcon != null) dragIcon.gameObject.SetActive(false);
-    }
+    public void UpdateDragPosition(Vector2 pos) => dragIcon.transform.position = pos;
+    public void StopDrag() { if (dragIcon) dragIcon.gameObject.SetActive(false); isDragging = false; }
+    [HideInInspector] public bool isDragging = false;
 }
