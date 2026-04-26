@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+
 public enum PlantActionType
 {
     None,
@@ -13,23 +14,27 @@ public class PlantPot : MonoBehaviour
     [Header("Состояние")]
     public float currentWater = 0f;
     public float maxWater = 100f;
-    public float currentTemperature = 20f; // Температура грядки
+    public float currentTemperature = 20f;
 
     [Header("Кто здесь живет?")]
-    public PlantData currentPlant; // Ссылка на файл (какое растение посажено)
+    public PlantData currentPlant;
+
+    [Header("Точка спавна")]
+    public Transform spawnPoint; // перетащи сюда дочерний объект SpawnPoint из иерархии
 
     // Внутренние переменные
     private GameObject spawnedVisual;
     public float currentGrowth = 0f;
     public float currentHealth = 100f;
     public bool isDead = false;
+    private int currentPhaseIndex = -1; // -1 = ничего не спавнено
 
     void Update()
     {
         if (currentPlant != null && !isDead)
         {
             ProcessGrowth();
-            UpdateVisualSize();
+            UpdateVisualPhase();
         }
     }
 
@@ -50,13 +55,42 @@ public class PlantPot : MonoBehaviour
         }
         else
         {
-            currentHealth -= 1f * Time.deltaTime;// поменял для теста (было 10f)
+            currentHealth -= 1f * Time.deltaTime;
         }
 
         currentWater = Mathf.Clamp(currentWater, 0, maxWater);
+        currentHealth = Mathf.Clamp(currentHealth, 0, 100f);
         currentGrowth = Mathf.Clamp(currentGrowth, 0, 100);
 
         if (currentHealth <= 0) Die();
+    }
+
+    void UpdateVisualPhase()
+    {
+        if (currentPlant == null || currentPlant.growthPrefabs == null) return;
+
+        int phase = Mathf.Clamp((int)(currentGrowth / 25f), 0, currentPlant.growthPrefabs.Length - 1);
+
+        // Фаза не изменилась — ничего не делаем
+        if (phase == currentPhaseIndex) return;
+
+        currentPhaseIndex = phase;
+        SpawnVisual(currentPlant.growthPrefabs[phase]);
+    }
+
+    void SpawnVisual(GameObject prefab)
+    {
+        if (spawnedVisual != null) Destroy(spawnedVisual);
+
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[PlantPot] Префаб для фазы {currentPhaseIndex} не назначен!");
+            return;
+        }
+
+        Transform origin = spawnPoint != null ? spawnPoint : transform;
+
+        spawnedVisual = Instantiate(prefab, origin.position, origin.rotation);
     }
 
     public PlantActionType Interact(PlayerInventory inventory)
@@ -67,19 +101,15 @@ public class PlantPot : MonoBehaviour
             return PlantActionType.Clear;
         }
 
-        // --- НОВАЯ ЛОГИКА: СБОР УРОЖАЯ ---
-        // Если на грядке что-то есть и оно выросло на 100%
         if (currentPlant != null && currentGrowth >= 100f)
         {
             Harvest(inventory);
-            return PlantActionType.Harvest; // Завершаем взаимодействие, чтобы не сработал полив или посадка
+            return PlantActionType.Harvest;
         }
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
-        // Если руки пусты и сбор не сработал выше — ничего не делаем
         if (activeSlot.IsEmpty) return PlantActionType.None;
 
-        // 1. Поливаем (инструментом)
         if (activeSlot.item.isTool)
         {
             currentWater = maxWater;
@@ -87,7 +117,6 @@ public class PlantPot : MonoBehaviour
             return PlantActionType.Water;
         }
 
-        // 2. Сажаем
         if (currentPlant == null && activeSlot.item is PlantData)
         {
             PlantData seedData = (PlantData)activeSlot.item;
@@ -95,6 +124,7 @@ public class PlantPot : MonoBehaviour
             inventory.ConsumeSelectedItem();
             return PlantActionType.Plant;
         }
+
         return PlantActionType.None;
     }
 
@@ -102,17 +132,15 @@ public class PlantPot : MonoBehaviour
     {
         if (currentPlant.harvestResult != null)
         {
-            // Пытаемся добавить предмет в инвентарь
             int leftover = inventory.AddItem(currentPlant.harvestResult, currentPlant.harvestAmount);
 
             if (leftover == 0)
             {
                 Debug.Log($"Собрано: {currentPlant.harvestResult.itemName}");
-                ClearPot(); // Грядка снова пуста и готова к посадке
+                ClearPot();
             }
             else
             {
-                // Если leftover > 0, значит инвентарь забился
                 Debug.Log("Инвентарь полон! Освободите место для урожая.");
             }
         }
@@ -125,52 +153,31 @@ public class PlantPot : MonoBehaviour
 
     void Plant(PlantData newData)
     {
-        currentPlant = newData; // Запомнили файл
-
-        // Создаем визуал
-        if (currentPlant.healthyPrefab != null)
-        {
-            if (spawnedVisual != null) Destroy(spawnedVisual);
-            spawnedVisual = Instantiate(currentPlant.healthyPrefab, transform);
-            spawnedVisual.transform.localPosition = Vector3.zero;
-            spawnedVisual.transform.localRotation = Quaternion.identity;
-        }
-
+        currentPlant = newData;
         currentGrowth = 0f;
         currentHealth = 100f;
         isDead = false;
+        currentPhaseIndex = -1; // сбрасываем фазу — UpdateVisualPhase сразу подхватит
+
         Debug.Log($"Посажена: {currentPlant.itemName}");
     }
 
     void Die()
     {
         isDead = true;
+        currentPhaseIndex = -1;
         Debug.Log("Погибло!");
 
-        if (spawnedVisual != null) Destroy(spawnedVisual);
-
-        if (currentPlant.deadPrefab != null)
-        {
-            spawnedVisual = Instantiate(currentPlant.deadPrefab, transform);
-            spawnedVisual.transform.localPosition = Vector3.zero;
-        }
+        SpawnVisual(currentPlant.deadPrefab);
     }
 
     void ClearPot()
     {
         if (spawnedVisual != null) Destroy(spawnedVisual);
+        spawnedVisual = null;
         currentPlant = null;
         isDead = false;
-    }
-
-    void UpdateVisualSize()
-    {
-        if (spawnedVisual != null)
-        {
-            float percent = currentGrowth / 100f;
-            float h = Mathf.Max(0.1f, percent * 3.0f);
-            spawnedVisual.transform.localScale = new Vector3(0.3f, h, 0.3f);
-        }
+        currentPhaseIndex = -1;
     }
 
     public PlantActionType GetAvailableAction(PlayerInventory inventory)
@@ -186,5 +193,4 @@ public class PlantPot : MonoBehaviour
 
         return PlantActionType.None;
     }
-
 }
