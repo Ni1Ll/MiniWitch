@@ -14,6 +14,7 @@ public class SmartFollower : MonoBehaviour
     [Header("Refs")]
     public Transform player;
     [SerializeField] private Transform orderTarget; 
+    [SerializeField] private GameObject mark;
 
     [Header("Follow Settings")]
     [SerializeField] private float followRadius = 3f;
@@ -44,7 +45,7 @@ public class SmartFollower : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        
+        mark.SetActive(false);// Изначально спрятать маркеры заказов .Тест пот убрать когда будут сохранения
         if (agent != null)
             agent.speed = moveSpeed;
 
@@ -100,6 +101,7 @@ public class SmartFollower : MonoBehaviour
 
     void HandleReturnLogic()
     {
+        mark.SetActive(true); // Показываем маркеры заказов, когда возвращаемся к игроку
         agent.isStopped = false;
         agent.SetDestination(player.position);
 

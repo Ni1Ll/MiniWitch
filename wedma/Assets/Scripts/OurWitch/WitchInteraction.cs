@@ -1,18 +1,21 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
+using Invector.vCharacterController; // Добавили пространство имен Invector
 
 public class WitchInteraction : MonoBehaviour
 {
     public Animator animator;
-    [Header("Настройки")]
-    public float interactionRadius = 2.5f;
+    
+    [Header("Настройки взаимодействия")]
+    public float interactionRadius = 2.5f; 
+    public float minHighlightThreshold = 0.5f; 
 
     [Header("Настройки Зажатия (Hold)")]
     public float waterHoldTime = 1.5f;   
     public float plantHoldTime = 2.0f;  
     public float harvestHoldTime = 1.0f; 
-                                      
 
     public Image holdProgressBar;
     public string defaultIdleState = "Blend Tree";
@@ -20,39 +23,171 @@ public class WitchInteraction : MonoBehaviour
     [Header("Слот в руке")]
     public Transform handSocket;
 
+    [Header("UI и NPC")]
+    [SerializeField] private GameObject npcAgent; 
+    [SerializeField] private GameObject popupUI;  
+    
+    private vThirdPersonController invectorController; // Ссылка на контроллер Invector
     private PlayerInventory inventory;
     private GameObject currentSpawnedModel;
 
+    private bool isUIOpen = false;
     private bool isHolding = false;
     private float currentHoldTimer = 0f;
     private GameObject targetObject = null;
     private PlantActionType pendingAction = PlantActionType.None;
     private float currentRequiredTime = 1.0f; 
 
+    private List<Outline> reachableOutlines = new List<Outline>();
+    private Outline currentTargetOutline = null;
+
     void Start()
     {
         inventory = GetComponent<PlayerInventory>();
+        invectorController = GetComponent<vThirdPersonController>();
+        
         UpdateHandVisuals();
 
         if (holdProgressBar != null)
             holdProgressBar.transform.parent.gameObject.SetActive(false);
+            
+        if (popupUI != null) 
+            popupUI.SetActive(false);
     }
 
     void Update()
     {
+        // 1. БЛОКИРОВКА ДЛЯ UI
+        if (isUIOpen)
+        {
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
+            {
+                ClosePopupUI();
+            }
+            return; 
+        }
+
+        // 2. ОБЫЧНАЯ ЛОГИКА
         if (Input.GetKeyDown(KeyCode.G) && !isHolding) DropItem();
 
         HandleHotbarInput();
+        UpdateHighlighting(); 
         HandleHoldInteraction();
     }
 
+    // ==========================================
+    // УПРАВЛЕНИЕ UI И БЛОКИРОВКА INVECTOR
+    // ==========================================
+    void OpenPopupUI()
+    {
+        isUIOpen = true;
+        if (popupUI != null) popupUI.SetActive(true);
+        
+        // Блокируем Invector так же, как это делает твой SMB
+        if (invectorController != null)
+        {
+            invectorController.lockMovement = true;
+            invectorController.lockRotation = true;
+            invectorController.lockActions = true;
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    void ClosePopupUI()
+    {
+        isUIOpen = false;
+        if (popupUI != null) popupUI.SetActive(false);
+        
+        // Разблокируем Invector
+        if (invectorController != null)
+        {
+            invectorController.lockMovement = false;
+            invectorController.lockRotation = false;
+            invectorController.lockActions = false;
+        }
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    // ==========================================
+    // СИСТЕМА ВЫДЕЛЕНИЯ (OUTLINE)
+    // ==========================================
+    void UpdateHighlighting()
+    {
+        if (isHolding) return; 
+
+        Outline bestOutline = null;
+        float maxDot = minHighlightThreshold;
+
+        for (int i = reachableOutlines.Count - 1; i >= 0; i--)
+        {
+            if (reachableOutlines[i] == null)
+            {
+                reachableOutlines.RemoveAt(i);
+                continue;
+            }
+
+            Vector3 dirToTarget = (reachableOutlines[i].transform.position - transform.position).normalized;
+            float dot = Vector3.Dot(transform.forward, dirToTarget);
+
+            if (dot > maxDot)
+            {
+                maxDot = dot;
+                bestOutline = reachableOutlines[i];
+            }
+        }
+
+        if (bestOutline != currentTargetOutline)
+        {
+            if (currentTargetOutline != null) currentTargetOutline.enabled = false;
+            currentTargetOutline = bestOutline;
+            if (currentTargetOutline != null) currentTargetOutline.enabled = true;
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        Outline outline = other.GetComponent<Outline>();
+        if (outline != null && !reachableOutlines.Contains(outline))
+        {
+            reachableOutlines.Add(outline);
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        Outline outline = other.GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.enabled = false;
+            reachableOutlines.Remove(outline);
+            if (currentTargetOutline == outline) currentTargetOutline = null;
+        }
+    }
+
+    // ==========================================
+    // ЛОГИКА ВЗАИМОДЕЙСТВИЯ (E)
+    // ==========================================
     void HandleHoldInteraction()
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            targetObject = FindClosestInteractable();
+            targetObject = currentTargetOutline != null ? currentTargetOutline.gameObject : null;
+            
             if (targetObject != null)
             {
+                // Если это NPC — открываем UI
+                if (targetObject == npcAgent)
+                {
+                    if (currentTargetOutline != null) currentTargetOutline.enabled = false;
+                    OpenPopupUI();
+                    return;
+                }
+
+                // Если это горшок — запускаем логику Hold
                 PlantPot pot = targetObject.GetComponent<PlantPot>();
                 if (pot != null)
                 {
@@ -107,8 +242,23 @@ public class WitchInteraction : MonoBehaviour
     void FinishHoldInteraction()
     {
         if (targetObject != null) ExecuteInteraction(targetObject);
+        ResetHoldState();
+    }
 
-        // Сбрасываем переменные и UI
+    void CancelHoldInteraction()
+    {
+        if (animator != null && pendingAction != PlantActionType.None)
+        {
+            if (animator.HasState(0, Animator.StringToHash(defaultIdleState)))
+                animator.CrossFade(defaultIdleState, 0.2f, 0); 
+            else
+                animator.Play(0);
+        }
+        ResetHoldState();
+    }
+
+    void ResetHoldState()
+    {
         isHolding = false;
         currentHoldTimer = 0f;
         targetObject = null;
@@ -119,55 +269,6 @@ public class WitchInteraction : MonoBehaviour
             holdProgressBar.fillAmount = 0f;
             holdProgressBar.transform.parent.gameObject.SetActive(false);
         }
-    }
-
-    void CancelHoldInteraction()
-    {
-        isHolding = false;
-        currentHoldTimer = 0f;
-        targetObject = null;
-
-        if (holdProgressBar != null)
-        {
-            holdProgressBar.fillAmount = 0f;
-            holdProgressBar.transform.parent.gameObject.SetActive(false);
-        }
-
-        if (animator != null && pendingAction != PlantActionType.None)
-        {
-            if (animator.HasState(0, Animator.StringToHash(defaultIdleState)))
-            {
-                animator.CrossFade(defaultIdleState, 0.2f, 0); // Добавили , 0 для явного указания слоя
-            }
-            else
-            {
-                animator.Play(0);
-                Debug.LogWarning($"[Внимание] Аниматор не нашел состояние '{defaultIdleState}'. Проверь название в инспекторе!");
-            }
-
-            pendingAction = PlantActionType.None;
-        }
-    }
-
-    GameObject FindClosestInteractable()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactionRadius);
-        GameObject closest = null;
-        float minDist = Mathf.Infinity;
-
-        foreach (var hit in hits)
-        {
-            if (hit.GetComponent<PlantPot>() != null || hit.GetComponent<PickupItem>() != null)
-            {
-                float dist = Vector3.Distance(transform.position, hit.transform.position);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    closest = hit.gameObject;
-                }
-            }
-        }
-        return closest;
     }
 
     void ExecuteInteraction(GameObject obj)
@@ -184,11 +285,16 @@ public class WitchInteraction : MonoBehaviour
         if (item != null && item.itemData != null)
         {
             int leftover = inventory.AddItem(item.itemData, 1);
-
             if (leftover == 0)
             {
-                if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+                Outline o = obj.GetComponent<Outline>();
+                if (o != null) {
+                    o.enabled = false;
+                    reachableOutlines.Remove(o);
+                    if (currentTargetOutline == o) currentTargetOutline = null;
+                }
 
+                if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
                 if (animator != null) animator.SetTrigger("Pickup");
 
                 Collider itemCol = item.GetComponent<Collider>();
@@ -199,12 +305,10 @@ public class WitchInteraction : MonoBehaviour
 
                 StartCoroutine(DelayedPickup(1.0f, item.gameObject, item.itemData));
             }
-            else
-            {
-                Debug.Log("Инвентарь полон!");
-            }
         }
     }
+
+    // --- Инвентарь и Дроп (Твоя оригинальная логика) ---
 
     void HandleHotbarInput()
     {
@@ -252,54 +356,38 @@ public class WitchInteraction : MonoBehaviour
 
     public void UpdateHandVisuals()
     {
-        if (currentSpawnedModel != null)
-        {
-            Destroy(currentSpawnedModel);
-            currentSpawnedModel = null;
-        }
+        if (currentSpawnedModel != null) { Destroy(currentSpawnedModel); currentSpawnedModel = null; }
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (!activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
         {
             currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
-            Rigidbody rb = currentSpawnedModel.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = true;
-                rb.detectCollisions = false;
-            }
-            currentSpawnedModel.transform.localPosition = Vector3.zero;
-            currentSpawnedModel.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
-            currentSpawnedModel.transform.localScale = Vector3.one * 0.01f;
+            SetupInHand(currentSpawnedModel);
         }
+    }
+
+    private void SetupInHand(GameObject model)
+    {
+        Rigidbody rb = model.GetComponent<Rigidbody>();
+        if (rb != null) { rb.isKinematic = true; rb.detectCollisions = false; }
+        model.transform.localPosition = Vector3.zero;
+        model.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
+        model.transform.localScale = Vector3.one * 0.01f;
     }
 
     private IEnumerator DelayedPickup(float delay, GameObject worldItem, ItemData pickedData)
     {
         yield return new WaitForSeconds(delay);
-
         ShowSpecificItemInHand(pickedData);
-
         if (worldItem != null) Destroy(worldItem);
     }
 
     private void ShowSpecificItemInHand(ItemData data)
     {
         if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
-
         if (data != null && data.handVisualPrefab != null && handSocket != null)
         {
             currentSpawnedModel = Instantiate(data.handVisualPrefab, handSocket);
-
-            Rigidbody rb = currentSpawnedModel.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = true;
-                rb.detectCollisions = false;
-            }
-
-            currentSpawnedModel.transform.localPosition = Vector3.zero;
-            currentSpawnedModel.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
-            currentSpawnedModel.transform.localScale = Vector3.one * 0.01f;
+            SetupInHand(currentSpawnedModel);
         }
     }
 }
