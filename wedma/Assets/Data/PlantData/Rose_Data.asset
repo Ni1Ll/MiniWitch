@@ -20,8 +20,12 @@ MonoBehaviour:
   dropPrefab: {fileID: 1573337168171801803, guid: 726226b49c7d44d4691ed8cd329524d5, type: 3}
   sellPrice: 15
   buyPrice: 30
-  healthyPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
-  deadPrefab: {fileID: 4033947181200368389, guid: 74f33b25c7c00df478a00898b75fe647, type: 3}
+  growthPrefabs:
+  - {fileID: 809300737260174037, guid: a3d257d56f19a0a47a8a42d496a32641, type: 3}
+  - {fileID: 8941790580323167351, guid: 22edf122e3d3d1a478a38b1d3950c2cc, type: 3}
+  - {fileID: 288023727699951239, guid: 29a595f3fee462244a597b11fd98dd9c, type: 3}
+  - {fileID: 7027855385169216124, guid: 0ac184174960f6b4fb955bc5528406e0, type: 3}
+  deadPrefab: {fileID: 1346220738823535553, guid: b1ca4e69cd656de4d96c0c695f5461ae, type: 3}
   waterConsumption: 10
   optimalTemp: 25
   tempRange: 10
