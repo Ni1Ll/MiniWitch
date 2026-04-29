@@ -16,7 +16,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
   maxStack: 1
   isTool: 0
-  handVisualPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
-  dropPrefab: {fileID: 8778766513887099413, guid: f6e9befad3418754dae0d6743a1bfbb2, type: 3}
+  handVisualPrefab: {fileID: 7601878235332997926, guid: b6d91dfd5caddec4a89301fd06fe58de, type: 3}
+  dropPrefab: {fileID: 7601878235332997926, guid: b6d91dfd5caddec4a89301fd06fe58de, type: 3}
   sellPrice: 15
   buyPrice: 30

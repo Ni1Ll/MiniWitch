@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "New Plant", menuName = "Garden/Plant Data")]
 public class PlantData : ItemData
@@ -16,6 +17,7 @@ public class PlantData : ItemData
     public float growthSpeed = 10f;
 
     [Header("Урожай")]
-    public ItemData harvestResult;
+    public ItemData harvestResult; 
     public int harvestAmount = 1;
+
 }

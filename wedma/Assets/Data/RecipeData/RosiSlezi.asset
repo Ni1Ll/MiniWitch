@@ -15,6 +15,6 @@ MonoBehaviour:
   recipeName: "\u0420\u043E\u0437\u044B\u0421\u043B\u0435\u0437\u044B"
   ingredients:
   - item: {fileID: 11400000, guid: 6ce6bbd2a21a84147874660c0444f7d1, type: 2}
-    amount: 0
+    amount: 1
   resultPotion: {fileID: 11400000, guid: df7d6d5cf8e1ec54ca248a92f7feb903, type: 2}
   resultAmount: 1

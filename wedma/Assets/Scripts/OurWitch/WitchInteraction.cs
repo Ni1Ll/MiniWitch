@@ -2,20 +2,20 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-using Invector.vCharacterController; // Добавили пространство имен Invector
+using Invector.vCharacterController;
 
 public class WitchInteraction : MonoBehaviour
 {
     public Animator animator;
-    
+
     [Header("Настройки взаимодействия")]
-    public float interactionRadius = 2.5f; 
-    public float minHighlightThreshold = 0.5f; 
+    public float interactionRadius = 2.5f;
+    public float minHighlightThreshold = 0.5f;
 
     [Header("Настройки Зажатия (Hold)")]
-    public float waterHoldTime = 1.5f;   
-    public float plantHoldTime = 2.0f;  
-    public float harvestHoldTime = 1.0f; 
+    public float waterHoldTime = 1.5f;
+    public float plantHoldTime = 2.0f;
+    public float harvestHoldTime = 1.0f;
 
     public Image holdProgressBar;
     public string defaultIdleState = "Blend Tree";
@@ -24,10 +24,10 @@ public class WitchInteraction : MonoBehaviour
     public Transform handSocket;
 
     [Header("UI и NPC")]
-    [SerializeField] private GameObject npcAgent; 
-    [SerializeField] private GameObject popupUI;  
-    
-    private vThirdPersonController invectorController; // Ссылка на контроллер Invector
+    [SerializeField] private GameObject npcAgent;
+    [SerializeField] private GameObject popupUI;
+
+    private vThirdPersonController invectorController;
     private PlayerInventory inventory;
     private GameObject currentSpawnedModel;
 
@@ -36,7 +36,7 @@ public class WitchInteraction : MonoBehaviour
     private float currentHoldTimer = 0f;
     private GameObject targetObject = null;
     private PlantActionType pendingAction = PlantActionType.None;
-    private float currentRequiredTime = 1.0f; 
+    private float currentRequiredTime = 1.0f;
 
     private List<Outline> reachableOutlines = new List<Outline>();
     private Outline currentTargetOutline = null;
@@ -45,33 +45,29 @@ public class WitchInteraction : MonoBehaviour
     {
         inventory = GetComponent<PlayerInventory>();
         invectorController = GetComponent<vThirdPersonController>();
-        
+
         UpdateHandVisuals();
 
         if (holdProgressBar != null)
             holdProgressBar.transform.parent.gameObject.SetActive(false);
-            
-        if (popupUI != null) 
+
+        if (popupUI != null)
             popupUI.SetActive(false);
     }
 
     void Update()
     {
-        // 1. БЛОКИРОВКА ДЛЯ UI
         if (isUIOpen)
         {
             if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
-            {
                 ClosePopupUI();
-            }
-            return; 
+            return;
         }
 
-        // 2. ОБЫЧНАЯ ЛОГИКА
         if (Input.GetKeyDown(KeyCode.G) && !isHolding) DropItem();
 
         HandleHotbarInput();
-        UpdateHighlighting(); 
+        UpdateHighlighting();
         HandleHoldInteraction();
     }
 
@@ -82,8 +78,7 @@ public class WitchInteraction : MonoBehaviour
     {
         isUIOpen = true;
         if (popupUI != null) popupUI.SetActive(true);
-        
-        // Блокируем Invector так же, как это делает твой SMB
+
         if (invectorController != null)
         {
             invectorController.lockMovement = true;
@@ -99,8 +94,7 @@ public class WitchInteraction : MonoBehaviour
     {
         isUIOpen = false;
         if (popupUI != null) popupUI.SetActive(false);
-        
-        // Разблокируем Invector
+
         if (invectorController != null)
         {
             invectorController.lockMovement = false;
@@ -117,7 +111,7 @@ public class WitchInteraction : MonoBehaviour
     // ==========================================
     void UpdateHighlighting()
     {
-        if (isHolding) return; 
+        if (isHolding) return;
 
         Outline bestOutline = null;
         float maxDot = minHighlightThreshold;
@@ -152,9 +146,7 @@ public class WitchInteraction : MonoBehaviour
     {
         Outline outline = other.GetComponent<Outline>();
         if (outline != null && !reachableOutlines.Contains(outline))
-        {
             reachableOutlines.Add(outline);
-        }
     }
 
     void OnTriggerExit(Collider other)
@@ -176,10 +168,9 @@ public class WitchInteraction : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             targetObject = currentTargetOutline != null ? currentTargetOutline.gameObject : null;
-            
+
             if (targetObject != null)
             {
-                // Если это NPC — открываем UI
                 if (targetObject == npcAgent)
                 {
                     if (currentTargetOutline != null) currentTargetOutline.enabled = false;
@@ -187,7 +178,6 @@ public class WitchInteraction : MonoBehaviour
                     return;
                 }
 
-                // Если это горшок — запускаем логику Hold
                 PlantPot pot = targetObject.GetComponent<PlantPot>();
                 if (pot != null)
                 {
@@ -228,15 +218,11 @@ public class WitchInteraction : MonoBehaviour
                 holdProgressBar.fillAmount = currentHoldTimer / currentRequiredTime;
 
             if (currentHoldTimer >= currentRequiredTime)
-            {
                 FinishHoldInteraction();
-            }
         }
 
         if (Input.GetKeyUp(KeyCode.E) && isHolding)
-        {
             CancelHoldInteraction();
-        }
     }
 
     void FinishHoldInteraction()
@@ -250,7 +236,7 @@ public class WitchInteraction : MonoBehaviour
         if (animator != null && pendingAction != PlantActionType.None)
         {
             if (animator.HasState(0, Animator.StringToHash(defaultIdleState)))
-                animator.CrossFade(defaultIdleState, 0.2f, 0); 
+                animator.CrossFade(defaultIdleState, 0.2f, 0);
             else
                 animator.Play(0);
         }
@@ -288,27 +274,43 @@ public class WitchInteraction : MonoBehaviour
             if (leftover == 0)
             {
                 Outline o = obj.GetComponent<Outline>();
-                if (o != null) {
-                    o.enabled = false;
-                    reachableOutlines.Remove(o);
-                    if (currentTargetOutline == o) currentTargetOutline = null;
-                }
-
-                if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
-                if (animator != null) animator.SetTrigger("Pickup");
+                if (o != null) o.enabled = false;
 
                 Collider itemCol = item.GetComponent<Collider>();
                 if (itemCol != null) itemCol.enabled = false;
 
-                Rigidbody itemRb = item.GetComponent<Rigidbody>();
-                if (itemRb != null) itemRb.isKinematic = true;
+                if (animator != null) animator.SetTrigger("Pickup");
 
-                StartCoroutine(DelayedPickup(1.0f, item.gameObject, item.itemData));
+                StartCoroutine(FullPickupSequence(item.itemData.handVisualPrefab, item.gameObject));
             }
         }
     }
 
-    // --- Инвентарь и Дроп (Твоя оригинальная логика) ---
+    private void ShowTemporaryItem(GameObject temporaryPrefab)
+    {
+        if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+
+        if (temporaryPrefab != null && handSocket != null)
+        {
+            currentSpawnedModel = Instantiate(temporaryPrefab, handSocket);
+            SetupInHand(currentSpawnedModel);
+        }
+    }
+
+    private IEnumerator FullPickupSequence(GameObject itemPrefab, GameObject worldObject)
+    {
+        yield return new WaitForSeconds(1.0f);
+
+        ShowTemporaryItem(itemPrefab);
+
+        if (worldObject != null) Destroy(worldObject);
+
+        yield return new WaitForSeconds(2.0f);
+
+        UpdateHandVisuals();
+    }
+
+    // --- Инвентарь и Дроп ---
 
     void HandleHotbarInput()
     {
@@ -356,8 +358,10 @@ public class WitchInteraction : MonoBehaviour
 
     public void UpdateHandVisuals()
     {
-        if (currentSpawnedModel != null) { Destroy(currentSpawnedModel); currentSpawnedModel = null; }
+        if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+
         InventorySlot activeSlot = inventory.GetSelectedSlot();
+
         if (!activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
         {
             currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
@@ -374,20 +378,10 @@ public class WitchInteraction : MonoBehaviour
         model.transform.localScale = Vector3.one * 0.01f;
     }
 
-    private IEnumerator DelayedPickup(float delay, GameObject worldItem, ItemData pickedData)
+    private IEnumerator DelayedPickup(float delay, GameObject worldItem)
     {
         yield return new WaitForSeconds(delay);
-        ShowSpecificItemInHand(pickedData);
         if (worldItem != null) Destroy(worldItem);
-    }
-
-    private void ShowSpecificItemInHand(ItemData data)
-    {
-        if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
-        if (data != null && data.handVisualPrefab != null && handSocket != null)
-        {
-            currentSpawnedModel = Instantiate(data.handVisualPrefab, handSocket);
-            SetupInHand(currentSpawnedModel);
-        }
+        UpdateHandVisuals();
     }
 }

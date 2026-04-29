@@ -9,6 +9,13 @@ public enum PlantActionType
     Clear
 }
 
+public enum ToolType
+{
+    None,
+    WateringCan,  
+    Shovel,     
+}
+
 public class PlantPot : MonoBehaviour
 {
     [Header("Состояние")]
@@ -20,14 +27,13 @@ public class PlantPot : MonoBehaviour
     public PlantData currentPlant;
 
     [Header("Точка спавна")]
-    public Transform spawnPoint; // перетащи сюда дочерний объект SpawnPoint из иерархии
+    public Transform spawnPoint;
 
-    // Внутренние переменные
     private GameObject spawnedVisual;
     public float currentGrowth = 0f;
     public float currentHealth = 100f;
     public bool isDead = false;
-    private int currentPhaseIndex = -1; // -1 = ничего не спавнено
+    private int currentPhaseIndex = -1;
 
     void Update()
     {
@@ -42,11 +48,9 @@ public class PlantPot : MonoBehaviour
     {
         if (currentGrowth >= 100f) return;
 
-        // 1. Температура
         float tempDiff = Mathf.Abs(currentTemperature - currentPlant.optimalTemp);
         if (tempDiff > currentPlant.tempRange) currentHealth -= 5f * Time.deltaTime;
 
-        // 2. Вода
         if (currentWater > 0)
         {
             currentWater -= currentPlant.waterConsumption * Time.deltaTime;
@@ -70,8 +74,6 @@ public class PlantPot : MonoBehaviour
         if (currentPlant == null || currentPlant.growthPrefabs == null) return;
 
         int phase = Mathf.Clamp((int)(currentGrowth / 25f), 0, currentPlant.growthPrefabs.Length - 1);
-
-        // Фаза не изменилась — ничего не делаем
         if (phase == currentPhaseIndex) return;
 
         currentPhaseIndex = phase;
@@ -89,7 +91,6 @@ public class PlantPot : MonoBehaviour
         }
 
         Transform origin = spawnPoint != null ? spawnPoint : transform;
-
         spawnedVisual = Instantiate(prefab, origin.position, origin.rotation);
     }
 
@@ -110,7 +111,8 @@ public class PlantPot : MonoBehaviour
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (activeSlot.IsEmpty) return PlantActionType.None;
 
-        if (activeSlot.item.isTool)
+        // ИСПРАВЛЕНИЕ: проверяем что инструмент — именно лейка, а не любой инструмент
+        if (activeSlot.item.isTool && activeSlot.item.toolType == ToolType.WateringCan)
         {
             currentWater = maxWater;
             Debug.Log("Полито!");
@@ -157,7 +159,7 @@ public class PlantPot : MonoBehaviour
         currentGrowth = 0f;
         currentHealth = 100f;
         isDead = false;
-        currentPhaseIndex = -1; // сбрасываем фазу — UpdateVisualPhase сразу подхватит
+        currentPhaseIndex = -1;
 
         Debug.Log($"Посажена: {currentPlant.itemName}");
     }
@@ -167,7 +169,6 @@ public class PlantPot : MonoBehaviour
         isDead = true;
         currentPhaseIndex = -1;
         Debug.Log("Погибло!");
-
         SpawnVisual(currentPlant.deadPrefab);
     }
 
@@ -188,8 +189,12 @@ public class PlantPot : MonoBehaviour
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (activeSlot.IsEmpty) return PlantActionType.None;
 
-        if (activeSlot.item.isTool) return PlantActionType.Water;
-        if (currentPlant == null && activeSlot.item is PlantData) return PlantActionType.Plant;
+        // ИСПРАВЛЕНИЕ: та же проверка типа инструмента
+        if (activeSlot.item.isTool && activeSlot.item.toolType == ToolType.WateringCan)
+            return PlantActionType.Water;
+
+        if (currentPlant == null && activeSlot.item is PlantData)
+            return PlantActionType.Plant;
 
         return PlantActionType.None;
     }
