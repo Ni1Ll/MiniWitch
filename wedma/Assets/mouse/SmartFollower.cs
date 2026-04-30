@@ -10,11 +10,12 @@ public class SmartFollower : MonoBehaviour
     [SerializeField] private float emergencyDistance = 10f; 
 
     private float pathUpdateTimer;
+    private Marker3d mark; // Ссылка на скрипт маркера заказов, чтобы управлять его видимостью
 
     [Header("Refs")]
     public Transform player;
     [SerializeField] private Transform orderTarget; 
-    [SerializeField] private GameObject mark;
+    
 
     [Header("Follow Settings")]
     [SerializeField] private float followRadius = 3f;
@@ -43,9 +44,11 @@ public class SmartFollower : MonoBehaviour
 
     void Start()
     {
+        mark = GetComponent<Marker3d>(); // Получаем ссылку на скрипт маркера заказов
+        mark.DisableMarker(0); // Изначально спрятать маркеры заказов. Тест, потом убрать когда будут сохранения
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        mark.SetActive(false);// Изначально спрятать маркеры заказов .Тест пот убрать когда будут сохранения
+        //mark.SetActive(false);// Изначально спрятать маркеры заказов .Тест пот убрать когда будут сохранения
         if (agent != null)
             agent.speed = moveSpeed;
 
@@ -101,7 +104,8 @@ public class SmartFollower : MonoBehaviour
 
     void HandleReturnLogic()
     {
-        mark.SetActive(true); // Показываем маркеры заказов, когда возвращаемся к игроку
+        //mark.SetActive(true); // Показываем маркеры заказов, когда возвращаемся к игроку
+        mark.EnableMarker(0); // Скрываем маркеры заказов, когда возвращаемся к игроку
         agent.isStopped = false;
         agent.SetDestination(player.position);
 
