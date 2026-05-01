@@ -4,12 +4,6 @@ namespace Invector.vCharacterController
 {
     public class vThirdPersonAnimator : vThirdPersonMotor
     {
-        private float idleTimer;
-        public float idleChangeTime = 4f;
-
-        private float targetIdle;
-        private int lastIdle;
-
         #region Variables                
 
         public const float walkSpeed = 0.5f;
@@ -51,31 +45,6 @@ namespace Invector.vCharacterController
                 stopMove ? 0f : inputMagnitude,
                 isStrafing ? strafeSpeed.animationSmooth : freeSpeed.animationSmooth,
                 Time.deltaTime);
-
-            // -----------------------------
-            // SMOOTH IDLE SYSTEM
-            // -----------------------------
-
-            // плавное применение idle
-            animator.SetFloat("IdleIndex", targetIdle, 0.2f, Time.deltaTime);
-
-            var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-
-            if (isGrounded && inputMagnitude < 0.1f)
-            {
-                idleTimer += Time.deltaTime;
-
-                if (idleTimer >= idleChangeTime &&
-                    (stateInfo.normalizedTime % 1f) >= 0.85f)
-                {
-                    targetIdle = GetRandomIdle();
-                    idleTimer = 0f;
-                }
-            }
-            else
-            {
-                idleTimer = 0f;
-            }
         }
 
         public virtual void SetAnimatorMoveSpeed(vMovementSpeed speed)
@@ -94,20 +63,6 @@ namespace Invector.vCharacterController
                     0,
                     isSprinting ? sprintSpeed : runningSpeed
                 );
-        }
-
-        private int GetRandomIdle()
-        {
-            int newIdle;
-
-            do
-            {
-                newIdle = Random.Range(0, 3);
-            }
-            while (newIdle == lastIdle);
-
-            lastIdle = newIdle;
-            return newIdle;
         }
     }
 
