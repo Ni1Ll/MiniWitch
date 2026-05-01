@@ -12,8 +12,16 @@ public enum PlantActionType
 public enum ToolType
 {
     None,
-    WateringCan,  
-    Shovel,     
+    WateringCan,
+    Shovel,
+}
+
+[System.Serializable]
+public struct SoilVisualState
+{
+    public string name;
+    public float minWater;
+    public GameObject prefab;
 }
 
 public class PlantPot : MonoBehaviour
@@ -35,13 +43,86 @@ public class PlantPot : MonoBehaviour
     public bool isDead = false;
     private int currentPhaseIndex = -1;
 
+    [Header("Визуал Почвы")]
+    public GameObject baseSoilModel;
+    public Transform soilSpawnPoint;
+    public SoilVisualState[] soilStates;
+
+    private GameObject currentSoilVisual;
+    private int currentSoilIndex = -1;
+
+    private bool isBeingWatered = false;
+    public float waterFillSpeed = 50f;
+
+    public void SetWatering(bool state)
+    {
+        isBeingWatered = state;
+    }
+
     void Update()
     {
+        if (isBeingWatered && currentWater < maxWater)
+        {
+            currentWater += waterFillSpeed * Time.deltaTime;
+        }
+
+        if (!isBeingWatered && currentWater > 0)
+        {
+            currentWater -= 1.0f * Time.deltaTime;
+        }
+
+        currentWater = Mathf.Clamp(currentWater, 0, maxWater);
+
         if (currentPlant != null && !isDead)
         {
             ProcessGrowth();
             UpdateVisualPhase();
         }
+
+        UpdateSoilVisual();
+    }
+
+    void UpdateSoilVisual()
+    {
+        if (soilStates == null || soilStates.Length == 0) return;
+
+        int targetIndex = -1;
+
+        for (int i = soilStates.Length - 1; i >= 0; i--)
+        {
+            if (currentWater >= soilStates[i].minWater)
+            {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        if (targetIndex != currentSoilIndex)
+        {
+            currentSoilIndex = targetIndex;
+
+            if (targetIndex != -1)
+            {
+                if (baseSoilModel != null) baseSoilModel.SetActive(false);
+                SpawnSoil(soilStates[targetIndex].prefab);
+            }
+            else
+            {
+                if (baseSoilModel != null) baseSoilModel.SetActive(true);
+                if (currentSoilVisual != null) Destroy(currentSoilVisual);
+            }
+        }
+    }
+
+    void SpawnSoil(GameObject prefab)
+    {
+        if (currentSoilVisual != null) Destroy(currentSoilVisual);
+        if (prefab == null) return;
+
+        currentSoilVisual = Instantiate(prefab, soilSpawnPoint);
+        currentSoilVisual.transform.localPosition = Vector3.zero;
+        currentSoilVisual.transform.localRotation = Quaternion.identity;
+        currentSoilVisual.transform.localScale = Vector3.one;
     }
 
     void ProcessGrowth()
@@ -111,11 +192,8 @@ public class PlantPot : MonoBehaviour
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (activeSlot.IsEmpty) return PlantActionType.None;
 
-        // ИСПРАВЛЕНИЕ: проверяем что инструмент — именно лейка, а не любой инструмент
         if (activeSlot.item.isTool && activeSlot.item.toolType == ToolType.WateringCan)
         {
-            currentWater = maxWater;
-            Debug.Log("Полито!");
             return PlantActionType.Water;
         }
 
@@ -189,7 +267,6 @@ public class PlantPot : MonoBehaviour
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (activeSlot.IsEmpty) return PlantActionType.None;
 
-        // ИСПРАВЛЕНИЕ: та же проверка типа инструмента
         if (activeSlot.item.isTool && activeSlot.item.toolType == ToolType.WateringCan)
             return PlantActionType.Water;
 

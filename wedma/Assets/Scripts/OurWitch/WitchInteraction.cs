@@ -188,7 +188,11 @@ public class WitchInteraction : MonoBehaviour
                         isHolding = true;
                         currentHoldTimer = 0f;
 
-                        if (pendingAction == PlantActionType.Water) currentRequiredTime = waterHoldTime;
+                        if (pendingAction == PlantActionType.Water)
+                        {
+                            currentRequiredTime = waterHoldTime;
+                            pot.SetWatering(true);
+                        }
                         else if (pendingAction == PlantActionType.Plant) currentRequiredTime = plantHoldTime;
                         else if (pendingAction == PlantActionType.Harvest) currentRequiredTime = harvestHoldTime;
 
@@ -222,7 +226,23 @@ public class WitchInteraction : MonoBehaviour
         }
 
         if (Input.GetKeyUp(KeyCode.E) && isHolding)
+        {
+            if (targetObject != null)
+            {
+                PlantPot pot = targetObject.GetComponent<PlantPot>();
+                if (pot != null) pot.SetWatering(false);
+            }
             CancelHoldInteraction();
+        }
+    }
+
+    void StopWateringTarget()
+    {
+        if (targetObject != null)
+        {
+            PlantPot pot = targetObject.GetComponent<PlantPot>();
+            if (pot != null) pot.SetWatering(false); // ПЕРЕСТАЕМ ЛИТЬ
+        }
     }
 
     void FinishHoldInteraction()
@@ -245,6 +265,7 @@ public class WitchInteraction : MonoBehaviour
 
     void ResetHoldState()
     {
+        StopWateringTarget();
         isHolding = false;
         currentHoldTimer = 0f;
         targetObject = null;
