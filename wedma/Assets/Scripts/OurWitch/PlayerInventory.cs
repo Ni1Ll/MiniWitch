@@ -6,49 +6,91 @@ public class InventorySlot
     public ItemData item;
     public int count;
 
+    // Р”Р°РЅРЅС‹Рµ СЂР°СЃС‚РµРЅРёСЏ: РіРµРЅС‹ Рё С‚.Рґ.
+    public PlantInstance plantInstance;
+
     public bool IsEmpty => item == null || count <= 0;
 
     public void Clear()
     {
         item = null;
         count = 0;
+        plantInstance = null;
+    }
+
+    public string GetPlantInfo()
+    {
+        Debug.Log("ITEM: " + item);
+        Debug.Log("INSTANCE: " + plantInstance);
+
+        if (plantInstance == null) return "No genes";
+
+        string info = "=== GENES ===\n";
+
+        info += "Active:\n";
+        foreach (var g in plantInstance.activeGenes)
+        {
+            info += $"{g.type} +{g.value}\n";
+        }
+
+        info += "\nDormant:\n";
+        foreach (var g in plantInstance.dormantGenes)
+        {
+            info += $"{g.type} +{g.value}\n";
+        }
+
+        return info;
     }
 }
 
 public class PlayerInventory : MonoBehaviour
 {
-    [Header("Интерфейс (UI)")]
-    public InventoryUI ui; // Ссылка на скрипт отрисовки меню
+    [Header("РРЅС‚РµСЂС„РµР№СЃ (UI)")]
+    public InventoryUI ui;
 
-    [Header("Слоты инвентаря")]
-    public InventorySlot[] slots = new InventorySlot[21]; // 15 ячеек всего
-    public int selectedHotbarIndex = 0; // Активный слот (от 0 до 4)
+    [Header("РЎР»РѕС‚С‹ РёРЅРІРµРЅС‚Р°СЂСЏ")]
+    public InventorySlot[] slots = new InventorySlot[21];
+
+    [Header("РҐРѕС‚Р±Р°СЂ")]
+    public int selectedHotbarIndex = 0;
 
     void Awake()
     {
-        for (int i = 0; i < slots.Length; i++) slots[i] = new InventorySlot();
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == null)
+                slots[i] = new InventorySlot();
+        }
     }
 
+    // ---------------------------
+    // РћР‘Р«Р§РќР«Р• РџР Р•Р”РњР•РўР« Р‘Р•Р— Р“Р•РќРћР’
+    // ---------------------------
     public int AddItem(ItemData data, int amount)
     {
+        if (data == null) return amount;
+
         if (!data.isTool)
         {
             foreach (var slot in slots)
             {
-                if (slot.item == data && slot.count < data.maxStack)
+                // РЎС‚Р°РєР°РµРј С‚РѕР»СЊРєРѕ РѕР±С‹С‡РЅС‹Рµ РїСЂРµРґРјРµС‚С‹ Р±РµР· PlantInstance
+                if (!slot.IsEmpty &&
+                    slot.item == data &&
+                    slot.count < data.maxStack &&
+                    slot.plantInstance == null)
                 {
                     int spaceLeft = data.maxStack - slot.count;
+
                     if (amount <= spaceLeft)
                     {
                         slot.count += amount;
                         UpdateUI();
                         return 0;
                     }
-                    else
-                    {
-                        slot.count += spaceLeft;
-                        amount -= spaceLeft;
-                    }
+
+                    slot.count += spaceLeft;
+                    amount -= spaceLeft;
                 }
             }
         }
@@ -59,6 +101,59 @@ public class PlayerInventory : MonoBehaviour
             {
                 slot.item = data;
                 slot.count = amount;
+                slot.plantInstance = null;
+
+                UpdateUI();
+                return 0;
+            }
+        }
+
+        return amount;
+    }
+
+    // ---------------------------
+    // Р РђРЎРўР•РќРРЇ РЎ Р“Р•РќРђРњР
+    // ---------------------------
+    public int AddItem(ItemData data, int amount, PlantInstance instance)
+    {
+        if (data == null) return amount;
+
+        // 1. РЎРЅР°С‡Р°Р»Р° РїСЂРѕР±СѓРµРј РїРѕР»РѕР¶РёС‚СЊ РІ РІС‹Р±СЂР°РЅРЅС‹Р№ С…РѕС‚Р±Р°СЂ-СЃР»РѕС‚
+        InventorySlot selectedSlot = GetSelectedSlot();
+
+        if (selectedSlot != null && selectedSlot.IsEmpty)
+        {
+            selectedSlot.item = data;
+            selectedSlot.count = 1;
+            selectedSlot.plantInstance = ClonePlant(instance);
+
+            UpdateUI();
+            return 0;
+        }
+
+        // 2. РџРѕС‚РѕРј РїСЂРѕР±СѓРµРј РѕСЃС‚Р°Р»СЊРЅС‹Рµ С…РѕС‚Р±Р°СЂ-СЃР»РѕС‚С‹ 0-4
+        for (int i = 0; i <= 4 && i < slots.Length; i++)
+        {
+            if (slots[i].IsEmpty)
+            {
+                slots[i].item = data;
+                slots[i].count = 1;
+                slots[i].plantInstance = ClonePlant(instance);
+
+                UpdateUI();
+                return 0;
+            }
+        }
+
+        // 3. РџРѕС‚РѕРј РІРµСЃСЊ РѕСЃС‚Р°Р»СЊРЅРѕР№ РёРЅРІРµРЅС‚Р°СЂСЊ
+        foreach (var slot in slots)
+        {
+            if (slot.IsEmpty)
+            {
+                slot.item = data;
+                slot.count = 1;
+                slot.plantInstance = ClonePlant(instance);
+
                 UpdateUI();
                 return 0;
             }
@@ -69,16 +164,23 @@ public class PlayerInventory : MonoBehaviour
 
     public InventorySlot GetSelectedSlot()
     {
+        if (slots == null || slots.Length == 0) return null;
+
+        selectedHotbarIndex = Mathf.Clamp(selectedHotbarIndex, 0, Mathf.Min(4, slots.Length - 1));
         return slots[selectedHotbarIndex];
     }
 
     public void ConsumeSelectedItem()
     {
         InventorySlot active = GetSelectedSlot();
-        if (!active.IsEmpty && !active.item.isTool)
+
+        if (active != null && !active.IsEmpty && !active.item.isTool)
         {
             active.count--;
-            if (active.count <= 0) active.Clear();
+
+            if (active.count <= 0)
+                active.Clear();
+
             UpdateUI();
         }
     }
@@ -86,28 +188,52 @@ public class PlayerInventory : MonoBehaviour
     public void ChangeSelectedSlot(int direction)
     {
         selectedHotbarIndex += direction;
+
         if (selectedHotbarIndex > 4) selectedHotbarIndex = 0;
         if (selectedHotbarIndex < 0) selectedHotbarIndex = 4;
+
         UpdateUI();
     }
 
-    // --- НОВАЯ ЛОГИКА: Меняем предметы местами (Drag & Drop) ---
+    // Drag & Drop
     public void SwapSlots(int index1, int index2)
     {
-        // 1. Меняем данные в "карманах"
+        if (index1 < 0 || index1 >= slots.Length) return;
+        if (index2 < 0 || index2 >= slots.Length) return;
+
         InventorySlot temp = slots[index1];
         slots[index1] = slots[index2];
         slots[index2] = temp;
 
-        // 2. Обновляем картинки на экране
         UpdateUI();
 
-        // 3. Обновляем визуал в руке Ведьмы (если перетащили то, что держали в руках)
         WitchInteraction witch = GetComponent<WitchInteraction>();
         if (witch != null) witch.UpdateHandVisuals();
     }
 
-    // Тот самый потерянный метод!
+    private PlantInstance ClonePlant(PlantInstance original)
+    {
+        if (original == null) return null;
+        if (original.baseData == null) return null;
+
+        PlantInstance clone = new PlantInstance(original.baseData);
+
+        clone.activeGenes.Clear();
+        clone.dormantGenes.Clear();
+
+        foreach (var g in original.activeGenes)
+        {
+            clone.activeGenes.Add(new Gene(g.type, g.value));
+        }
+
+        foreach (var g in original.dormantGenes)
+        {
+            clone.dormantGenes.Add(new Gene(g.type, g.value));
+        }
+
+        return clone;
+    }
+
     private void UpdateUI()
     {
         if (ui != null) ui.UpdateAllSlots();

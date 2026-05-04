@@ -64,7 +64,14 @@ public class WitchInteraction : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.G) && !isHolding) DropItem();
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            var slot = inventory.GetSelectedSlot();
+            Debug.Log(slot.GetPlantInfo());
+        }
+
+        if (Input.GetKeyDown(KeyCode.G) && !isHolding)
+            DropItem();
 
         HandleHotbarInput();
         UpdateHighlighting();
@@ -74,6 +81,7 @@ public class WitchInteraction : MonoBehaviour
     // ==========================================
     // УПРАВЛЕНИЕ UI И БЛОКИРОВКА INVECTOR
     // ==========================================
+
     void OpenPopupUI()
     {
         isUIOpen = true;
@@ -107,8 +115,9 @@ public class WitchInteraction : MonoBehaviour
     }
 
     // ==========================================
-    // СИСТЕМА ВЫДЕЛЕНИЯ (OUTLINE)
+    // СИСТЕМА ВЫДЕЛЕНИЯ
     // ==========================================
+
     void UpdateHighlighting()
     {
         if (isHolding) return;
@@ -156,13 +165,16 @@ public class WitchInteraction : MonoBehaviour
         {
             outline.enabled = false;
             reachableOutlines.Remove(outline);
-            if (currentTargetOutline == outline) currentTargetOutline = null;
+
+            if (currentTargetOutline == outline)
+                currentTargetOutline = null;
         }
     }
 
     // ==========================================
-    // ЛОГИКА ВЗАИМОДЕЙСТВИЯ (E)
+    // ЛОГИКА ВЗАИМОДЕЙСТВИЯ E
     // ==========================================
+
     void HandleHoldInteraction()
     {
         if (Input.GetKeyDown(KeyCode.E))
@@ -179,6 +191,7 @@ public class WitchInteraction : MonoBehaviour
                 }
 
                 PlantPot pot = targetObject.GetComponent<PlantPot>();
+
                 if (pot != null)
                 {
                     pendingAction = pot.GetAvailableAction(inventory);
@@ -193,8 +206,18 @@ public class WitchInteraction : MonoBehaviour
                             currentRequiredTime = waterHoldTime;
                             pot.SetWatering(true);
                         }
-                        else if (pendingAction == PlantActionType.Plant) currentRequiredTime = plantHoldTime;
-                        else if (pendingAction == PlantActionType.Harvest) currentRequiredTime = harvestHoldTime;
+                        else if (pendingAction == PlantActionType.Plant)
+                        {
+                            currentRequiredTime = plantHoldTime;
+                        }
+                        else if (pendingAction == PlantActionType.Harvest)
+                        {
+                            currentRequiredTime = harvestHoldTime;
+                        }
+                        else if (pendingAction == PlantActionType.Clear)
+                        {
+                            currentRequiredTime = harvestHoldTime;
+                        }
 
                         if (holdProgressBar != null)
                             holdProgressBar.transform.parent.gameObject.SetActive(true);
@@ -204,6 +227,7 @@ public class WitchInteraction : MonoBehaviour
                             if (pendingAction == PlantActionType.Water) animator.SetTrigger("Water");
                             else if (pendingAction == PlantActionType.Plant) animator.SetTrigger("Plant");
                             else if (pendingAction == PlantActionType.Harvest) animator.SetTrigger("Harvest");
+                            else if (pendingAction == PlantActionType.Clear) animator.SetTrigger("Harvest");
                         }
                     }
                 }
@@ -232,6 +256,7 @@ public class WitchInteraction : MonoBehaviour
                 PlantPot pot = targetObject.GetComponent<PlantPot>();
                 if (pot != null) pot.SetWatering(false);
             }
+
             CancelHoldInteraction();
         }
     }
@@ -241,7 +266,7 @@ public class WitchInteraction : MonoBehaviour
         if (targetObject != null)
         {
             PlantPot pot = targetObject.GetComponent<PlantPot>();
-            if (pot != null) pot.SetWatering(false); // ПЕРЕСТАЕМ ЛИТЬ
+            if (pot != null) pot.SetWatering(false);
         }
     }
 
@@ -260,12 +285,14 @@ public class WitchInteraction : MonoBehaviour
             else
                 animator.Play(0);
         }
+
         ResetHoldState();
     }
 
     void ResetHoldState()
     {
         StopWateringTarget();
+
         isHolding = false;
         currentHoldTimer = 0f;
         targetObject = null;
@@ -291,7 +318,20 @@ public class WitchInteraction : MonoBehaviour
         PickupItem item = obj.GetComponent<PickupItem>();
         if (item != null && item.itemData != null)
         {
-            int leftover = inventory.AddItem(item.itemData, 1);
+            int leftover;
+
+            // 🔥 ВАЖНО: сохраняем гены при подборе
+            if (item.plantInstance != null)
+            {
+                leftover = inventory.AddItem(item.itemData, 1, item.plantInstance);
+                Debug.Log("[WitchInteraction] Подобрал растение С ГЕНАМИ");
+            }
+            else
+            {
+                leftover = inventory.AddItem(item.itemData, 1);
+                Debug.Log("[WitchInteraction] Подобрал обычный предмет БЕЗ ГЕНОВ");
+            }
+
             if (leftover == 0)
             {
                 Outline o = obj.GetComponent<Outline>();
@@ -300,7 +340,8 @@ public class WitchInteraction : MonoBehaviour
                 Collider itemCol = item.GetComponent<Collider>();
                 if (itemCol != null) itemCol.enabled = false;
 
-                if (animator != null) animator.SetTrigger("Pickup");
+                if (animator != null)
+                    animator.SetTrigger("Pickup");
 
                 StartCoroutine(FullPickupSequence(item.itemData.handVisualPrefab, item.gameObject));
             }
@@ -309,7 +350,8 @@ public class WitchInteraction : MonoBehaviour
 
     private void ShowTemporaryItem(GameObject temporaryPrefab)
     {
-        if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+        if (currentSpawnedModel != null)
+            Destroy(currentSpawnedModel);
 
         if (temporaryPrefab != null && handSocket != null)
         {
@@ -324,19 +366,24 @@ public class WitchInteraction : MonoBehaviour
 
         ShowTemporaryItem(itemPrefab);
 
-        if (worldObject != null) Destroy(worldObject);
+        if (worldObject != null)
+            Destroy(worldObject);
 
         yield return new WaitForSeconds(2.0f);
 
         UpdateHandVisuals();
     }
 
-    // --- Инвентарь и Дроп ---
+    // ==========================================
+    // ИНВЕНТАРЬ И ДРОП
+    // ==========================================
 
     void HandleHotbarInput()
     {
         int oldIndex = inventory.selectedHotbarIndex;
+
         float scroll = Input.GetAxis("Mouse ScrollWheel");
+
         if (scroll > 0f) inventory.ChangeSelectedSlot(-1);
         else if (scroll < 0f) inventory.ChangeSelectedSlot(1);
 
@@ -349,20 +396,32 @@ public class WitchInteraction : MonoBehaviour
         if (oldIndex != inventory.selectedHotbarIndex)
         {
             UpdateHandVisuals();
-            if (inventory.ui != null) inventory.ui.UpdateAllSlots();
+
+            if (inventory.ui != null)
+                inventory.ui.UpdateAllSlots();
         }
     }
 
     void DropItem()
     {
         InventorySlot activeSlot = inventory.GetSelectedSlot();
-        if (activeSlot.IsEmpty) return;
+        if (activeSlot == null || activeSlot.IsEmpty) return;
+
         Vector3 dropPos = transform.position + transform.forward * 0.3f + Vector3.up * 0.6f;
+
         if (activeSlot.item.dropPrefab != null)
         {
             GameObject droppedObj = Instantiate(activeSlot.item.dropPrefab, dropPos, transform.rotation);
+
             PickupItem pickup = droppedObj.GetComponent<PickupItem>();
-            if (pickup != null) pickup.itemData = activeSlot.item;
+
+            // 🔥 ВАЖНО: сохраняем гены при выбрасывании
+            if (pickup != null)
+            {
+                pickup.itemData = activeSlot.item;
+                pickup.plantInstance = activeSlot.plantInstance;
+            }
+
             Rigidbody rb = droppedObj.GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -371,19 +430,26 @@ public class WitchInteraction : MonoBehaviour
                 rb.AddForce(dropForce, ForceMode.Impulse);
             }
         }
+
         inventory.ConsumeSelectedItem();
-        if (activeSlot.item != null && activeSlot.item.isTool) activeSlot.Clear();
+
+        if (activeSlot.item != null && activeSlot.item.isTool)
+            activeSlot.Clear();
+
         UpdateHandVisuals();
-        if (inventory.ui != null) inventory.ui.UpdateAllSlots();
+
+        if (inventory.ui != null)
+            inventory.ui.UpdateAllSlots();
     }
 
     public void UpdateHandVisuals()
     {
-        if (currentSpawnedModel != null) Destroy(currentSpawnedModel);
+        if (currentSpawnedModel != null)
+            Destroy(currentSpawnedModel);
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
 
-        if (!activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
+        if (activeSlot != null && !activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
         {
             currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
             SetupInHand(currentSpawnedModel);
@@ -393,7 +459,13 @@ public class WitchInteraction : MonoBehaviour
     private void SetupInHand(GameObject model)
     {
         Rigidbody rb = model.GetComponent<Rigidbody>();
-        if (rb != null) { rb.isKinematic = true; rb.detectCollisions = false; }
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.detectCollisions = false;
+        }
+
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
         model.transform.localScale = Vector3.one * 0.01f;
@@ -402,7 +474,10 @@ public class WitchInteraction : MonoBehaviour
     private IEnumerator DelayedPickup(float delay, GameObject worldItem)
     {
         yield return new WaitForSeconds(delay);
-        if (worldItem != null) Destroy(worldItem);
+
+        if (worldItem != null)
+            Destroy(worldItem);
+
         UpdateHandVisuals();
     }
 }
