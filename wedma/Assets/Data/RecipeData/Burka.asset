@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dc44c6a0f63b324ab35639cfef6fb3e, type: 3}
-  m_Name: RoseSlezi
+  m_Name: Burka
   m_EditorClassIdentifier: 
-  recipeName: "\u0420\u043E\u0437\u044B...\u0441\u043B\u0435\u0437\u044B"
+  recipeName: "\u0411\u043E\u0434\u044F\u0436\u043D\u043E\u0435"
   ingredients:
-  - item: {fileID: 11400000, guid: e62c8b9ea32cfbc4fa891f39d8d730d2, type: 2}
+  - item: {fileID: 11400000, guid: 6ce6bbd2a21a84147874660c0444f7d1, type: 2}
     amount: 1
   resultPotion: {fileID: 11400000, guid: df7d6d5cf8e1ec54ca248a92f7feb903, type: 2}
   resultAmount: 1

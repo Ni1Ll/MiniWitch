@@ -340,6 +340,13 @@ public class WitchInteraction : MonoBehaviour
                 Collider itemCol = item.GetComponent<Collider>();
                 if (itemCol != null) itemCol.enabled = false;
 
+                Rigidbody rb = item.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true; 
+                    rb.linearVelocity = Vector3.zero;
+                }
+
                 if (animator != null)
                     animator.SetTrigger("Pickup");
 
@@ -407,7 +414,7 @@ public class WitchInteraction : MonoBehaviour
         InventorySlot activeSlot = inventory.GetSelectedSlot();
         if (activeSlot == null || activeSlot.IsEmpty) return;
 
-        Vector3 dropPos = transform.position + transform.forward * 0.3f + Vector3.up * 0.6f;
+        Vector3 dropPos = transform.position + (transform.forward * 0.4f) + (Vector3.up * 0.8f);
 
         if (activeSlot.item.dropPrefab != null)
         {
@@ -415,18 +422,26 @@ public class WitchInteraction : MonoBehaviour
 
             PickupItem pickup = droppedObj.GetComponent<PickupItem>();
 
-            // 🔥 ВАЖНО: сохраняем гены при выбрасывании
             if (pickup != null)
             {
                 pickup.itemData = activeSlot.item;
                 pickup.plantInstance = activeSlot.plantInstance;
             }
 
+            Collider playerCollider = GetComponent<Collider>();
+            Collider itemCollider = droppedObj.GetComponent<Collider>();
+            if (playerCollider != null && itemCollider != null)
+            {
+                Physics.IgnoreCollision(playerCollider, itemCollider);
+            }
+
             Rigidbody rb = droppedObj.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = false;
-                Vector3 dropForce = (transform.forward * 1.2f) + (Vector3.up * 1.0f);
+                rb.linearVelocity = Vector3.zero;
+
+                Vector3 dropForce = transform.forward * 0.2f;
                 rb.AddForce(dropForce, ForceMode.Impulse);
             }
         }
@@ -458,8 +473,9 @@ public class WitchInteraction : MonoBehaviour
 
     private void SetupInHand(GameObject model)
     {
-        Rigidbody rb = model.GetComponent<Rigidbody>();
+        Vector3 originalScale = model.transform.localScale;
 
+        Rigidbody rb = model.GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.isKinematic = true;
@@ -468,7 +484,14 @@ public class WitchInteraction : MonoBehaviour
 
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.Euler(180f, 0f, 0f);
-        model.transform.localScale = Vector3.one * 0.01f;
+
+        Vector3 handScale = handSocket.lossyScale;
+
+        model.transform.localScale = new Vector3(
+            originalScale.x / handScale.x,
+            originalScale.y / handScale.y,
+            originalScale.z / handScale.z
+        );
     }
 
     private IEnumerator DelayedPickup(float delay, GameObject worldItem)

@@ -301,9 +301,9 @@ MonoBehaviour:
   animator: {fileID: 2931819273564407302}
   interactionRadius: 2
   minHighlightThreshold: 0.5
-  waterHoldTime: 1.5
-  plantHoldTime: 2
-  harvestHoldTime: 1
+  waterHoldTime: 5
+  plantHoldTime: 10
+  harvestHoldTime: 3
   holdProgressBar: {fileID: 0}
   defaultIdleState: Blend Tree
   handSocket: {fileID: 2920911000378984662}

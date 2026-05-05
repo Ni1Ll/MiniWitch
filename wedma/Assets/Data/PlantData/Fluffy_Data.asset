@@ -10,27 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 430e42bc822eadb40becbae9504e761a, type: 3}
-  m_Name: Rose_Data
+  m_Name: Fluffy_Data
   m_EditorClassIdentifier: 
-  itemName: "\u0421\u0435\u043C\u0435\u043D\u0430 \u041A\u0440\u0430\u0441\u043D\u043E\u0433\u043E"
-  icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
+  itemName: 
+  icon: {fileID: 0}
   maxStack: 99
   isTool: 0
   toolType: 0
-  handVisualPrefab: {fileID: 9148859132371853892, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
-  dropPrefab: {fileID: 9148859132371853892, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+  handVisualPrefab: {fileID: 4871477302953526283, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+  dropPrefab: {fileID: 4871477302953526283, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
   sellPrice: 15
   buyPrice: 30
   family: 0
   growthPrefabs:
   - {fileID: 3442945737286156098, guid: a651b9682a9ec8c49a5d892f04d20cfb, type: 3}
-  - {fileID: 7122042170148247467, guid: ed80d8ebda936ab41b1543288138befb, type: 3}
-  - {fileID: 6746876759203649017, guid: bedb02a0f800b8b4388495555aa8d8eb, type: 3}
-  - {fileID: 873398502409156571, guid: 9cdcd64e9f4d74a4c9e4aeb482262526, type: 3}
+  - {fileID: 765087064666381282, guid: 28178dd14377ae54885b0c07156f6e7a, type: 3}
+  - {fileID: 3034990930849131205, guid: 060c099f04d59564999ccf28493baea3, type: 3}
+  - {fileID: 4087531488568390224, guid: 371712c0d372d894b8045e096c594853, type: 3}
   deadPrefab: {fileID: 2557365365892315739, guid: c20bf80c46849c946a01686508088108, type: 3}
   waterConsumption: 5
   optimalTemp: 20
   tempRange: 10
   growthSpeed: 10
-  harvestResult: {fileID: 11400000, guid: 6514b62ff102cbc4a9153cfb3499ed3c, type: 2}
+  harvestResult: {fileID: 11400000, guid: 8dd2898186973654fabc3862aac7e740, type: 2}
   harvestAmount: 1

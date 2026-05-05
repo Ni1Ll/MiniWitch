@@ -4,6 +4,8 @@ public class PickupItem : MonoBehaviour
 {
     public ItemData itemData;
 
+    private float dropTime;
+
     [Header("Генетика растения")]
     public PlantInstance plantInstance;
 
@@ -20,6 +22,7 @@ public class PickupItem : MonoBehaviour
 
     private void Awake()
     {
+        dropTime = Time.time;
         // На всякий случай генерируем при старте игры,
         // если в редакторе они не создались
         TryGeneratePlantInstance();
@@ -65,20 +68,4 @@ public class PickupItem : MonoBehaviour
         Debug.Log("[PickupItem] Гены очищены.");
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        PlayerInventory inv = other.GetComponent<PlayerInventory>();
-        if (inv == null) return;
-
-        if (plantInstance != null)
-        {
-            inv.AddItem(itemData, 1, plantInstance);
-        }
-        else
-        {
-            inv.AddItem(itemData, 1);
-        }
-
-        Destroy(gameObject);
-    }
 }
