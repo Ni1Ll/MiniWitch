@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 430e42bc822eadb40becbae9504e761a, type: 3}
-  m_Name: Fluffy_Data
+  m_Name: Xrizantema_Data
   m_EditorClassIdentifier: 
   itemName: 
   icon: {fileID: 0}
   maxStack: 99
   isTool: 0
   toolType: 0
-  handVisualPrefab: {fileID: 4871477302953526283, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
-  dropPrefab: {fileID: 4871477302953526283, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+  handVisualPrefab: {fileID: 6737505733466099402, guid: c37d3b98f3a93784d8501805feb01c44, type: 3}
+  dropPrefab: {fileID: 6737505733466099402, guid: c37d3b98f3a93784d8501805feb01c44, type: 3}
   sellPrice: 15
   buyPrice: 30
   family: 0

@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a5c8ab8f7c64ba4d87c074dbcb4be7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemData: {fileID: 11400000, guid: a44e54e5a54577d43a9d699c9ffd73d2, type: 2}
+  itemData: {fileID: 11400000, guid: e6e102e4ae1bf254396e4b1fd5a46459, type: 2}
   plantInstance:
     baseData: {fileID: 11400000, guid: a44e54e5a54577d43a9d699c9ffd73d2, type: 2}
     family: 0

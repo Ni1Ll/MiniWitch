@@ -10,27 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 430e42bc822eadb40becbae9504e761a, type: 3}
-  m_Name: Rose_Data
+  m_Name: Tulpan_Data
   m_EditorClassIdentifier: 
-  itemName: "\u0421\u0435\u043C\u0435\u043D\u0430 \u0420\u043E\u0437\u044B"
-  icon: {fileID: 21300000, guid: 8910493d2a01f394fa7a0e19ba864d64, type: 3}
+  itemName: "\u0421\u0435\u043C\u0435\u043D\u0430 \u0422\u044E\u043B\u044C\u043F\u0430\u043D\u0430"
+  icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
   maxStack: 99
-  isTool: 1
+  isTool: 0
   toolType: 0
-  handVisualPrefab: {fileID: 9148859132371853892, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
-  dropPrefab: {fileID: 9148859132371853892, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+  handVisualPrefab: {fileID: 6458315558261457447, guid: f554e2e8168d9a044b50d2b23a0df8f2, type: 3}
+  dropPrefab: {fileID: 6458315558261457447, guid: f554e2e8168d9a044b50d2b23a0df8f2, type: 3}
   sellPrice: 15
   buyPrice: 30
   family: 0
   growthPrefabs:
   - {fileID: 3442945737286156098, guid: a651b9682a9ec8c49a5d892f04d20cfb, type: 3}
-  - {fileID: 3263660473941583881, guid: fab0fc1d860ed7748b6b8d400932e6f0, type: 3}
-  - {fileID: 2399970869231289396, guid: 308d28f067481054da685ffe7fb6da6a, type: 3}
-  - {fileID: 8550819086039861684, guid: 00cd44f8a547a034f9a60cb3d964477a, type: 3}
+  - {fileID: 7122042170148247467, guid: ed80d8ebda936ab41b1543288138befb, type: 3}
+  - {fileID: 6746876759203649017, guid: bedb02a0f800b8b4388495555aa8d8eb, type: 3}
+  - {fileID: 873398502409156571, guid: 9cdcd64e9f4d74a4c9e4aeb482262526, type: 3}
   deadPrefab: {fileID: 2557365365892315739, guid: c20bf80c46849c946a01686508088108, type: 3}
   waterConsumption: 5
   optimalTemp: 20
   tempRange: 10
   growthSpeed: 10
-  harvestResult: {fileID: 11400000, guid: d6aad283f0cbd95419d0dbcc3cd814b1, type: 2}
+  harvestResult: {fileID: 11400000, guid: 6514b62ff102cbc4a9153cfb3499ed3c, type: 2}
   harvestAmount: 1

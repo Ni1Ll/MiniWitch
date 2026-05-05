@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &2555558785669885070
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.5271726
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.99
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -8.522104
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.8026857
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.5964024
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909939912230172856, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8430487571336541282, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: itemData
+      value: 
+      objectReference: {fileID: 11400000, guid: f3ba450ab6f695b4a8a2052c8b426188, type: 2}
+    - target: {fileID: 9148859132371853892, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: m_Name
+      value: Seeds_Xrisantema Variant
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
