@@ -210,6 +210,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LeafTrigger (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 8015441499842115441, guid: 2c4854af0e46b3f43986ad171cd83c7a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.49
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

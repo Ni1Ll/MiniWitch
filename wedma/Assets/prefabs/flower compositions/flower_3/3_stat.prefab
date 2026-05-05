@@ -117,6 +117,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5152474449401115302}
     m_Modifications:
+    - target: {fileID: 184881026715683757, guid: 22f68f2d5dcac95438dbf96066f73d56, type: 3}
+      propertyPath: InitialModule.maxNumParticles
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5232955736768783284, guid: 22f68f2d5dcac95438dbf96066f73d56, type: 3}
       propertyPath: m_Name
       value: LeafTrigger (1) 1
@@ -172,6 +176,10 @@ PrefabInstance:
     - target: {fileID: 5549289621146250633, guid: 22f68f2d5dcac95438dbf96066f73d56, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7275522347843664037, guid: 22f68f2d5dcac95438dbf96066f73d56, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.278
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
