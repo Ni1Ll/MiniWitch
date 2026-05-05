@@ -12,6 +12,26 @@ PrefabInstance:
       propertyPath: itemData
       value: 
       objectReference: {fileID: 11400000, guid: 041618ff020fc7047baab5fa29b6785a, type: 2}
+    - target: {fileID: 1677608396164538196, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+      propertyPath: generateGenesInEditor
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1677608396164538196, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+      propertyPath: autoGeneratePlantGenes
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1677608396164538196, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+      propertyPath: plantInstance.baseData
+      value: 
+      objectReference: {fileID: 11400000, guid: 041618ff020fc7047baab5fa29b6785a, type: 2}
+    - target: {fileID: 1677608396164538196, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+      propertyPath: plantInstance.activeGenes.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1677608396164538196, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
+      propertyPath: plantInstance.dormantGenes.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4871477302953526283, guid: 40952f8fc0db1774684ffcbd88e40b39, type: 3}
       propertyPath: m_Name
       value: Seeds_Odyvan Variant

@@ -10,7 +10,7 @@ public class GeneSelectionUI : MonoBehaviour
     [Header("Root")]
     public GameObject panel;
 
-    [Header("Предложенные гены донора")]
+    [Header("Предложенные гены")]
     public Button[] offeredButtons = new Button[5];
     public TextMeshProUGUI[] offeredTexts = new TextMeshProUGUI[5];
 
@@ -19,6 +19,7 @@ public class GeneSelectionUI : MonoBehaviour
     public TextMeshProUGUI[] targetTexts = new TextMeshProUGUI[5];
 
     private PlantInstance targetPlant;
+    private PlantInstance donorPlant;
     private PlayerInventory inventory;
 
     private List<Gene> offeredGenes = new List<Gene>();
@@ -34,6 +35,7 @@ public class GeneSelectionUI : MonoBehaviour
         for (int i = 0; i < offeredButtons.Length; i++)
         {
             int index = i;
+
             if (offeredButtons[i] != null)
                 offeredButtons[i].onClick.AddListener(() => SelectOfferedGene(index));
         }
@@ -41,6 +43,7 @@ public class GeneSelectionUI : MonoBehaviour
         for (int i = 0; i < targetButtons.Length; i++)
         {
             int index = i;
+
             if (targetButtons[i] != null)
                 targetButtons[i].onClick.AddListener(() => SelectTargetGene(index));
         }
@@ -48,26 +51,24 @@ public class GeneSelectionUI : MonoBehaviour
 
     public void Open(PlantInstance target, PlantInstance donor, int minBonus, int maxBonus, PlayerInventory playerInventory)
     {
-        if (target == null || donor == null)
+        if (target == null)
         {
-            Debug.LogWarning("[GeneSelectionUI] Нет target или donor.");
+            Debug.LogWarning("[GeneSelectionUI] Target plant is null.");
+            return;
+        }
+
+        if (donor == null)
+        {
+            Debug.LogWarning("[GeneSelectionUI] Donor plant is null.");
             return;
         }
 
         targetPlant = target;
+        donorPlant = donor;
         inventory = playerInventory;
         selectedOfferedIndex = -1;
 
-        offeredGenes.Clear();
-
-        // Берём 5 спящих генов донора и превращаем их в предложения с бонусом селекции
-        for (int i = 0; i < donor.dormantGenes.Count && offeredGenes.Count < 5; i++)
-        {
-            Gene donorGene = donor.dormantGenes[i];
-            int value = Random.Range(minBonus, maxBonus + 1);
-
-            offeredGenes.Add(new Gene(donorGene.type, value));
-        }
+        GenerateOfferedGenesFromFamilies(minBonus, maxBonus);
 
         if (panel != null)
             panel.SetActive(true);
@@ -75,7 +76,65 @@ public class GeneSelectionUI : MonoBehaviour
         RefreshUI();
     }
 
-    void RefreshUI()
+    private void GenerateOfferedGenesFromFamilies(int minBonus, int maxBonus)
+    {
+        offeredGenes.Clear();
+
+        List<GeneType> pool = new List<GeneType>();
+
+        // 1. Добавляем всю базу генов семейства основного растения
+        if (GeneticsCore.familyGenes.ContainsKey(targetPlant.family))
+        {
+            foreach (GeneType gene in GeneticsCore.familyGenes[targetPlant.family])
+            {
+                if (!pool.Contains(gene))
+                    pool.Add(gene);
+            }
+        }
+
+        // 2. Добавляем всю базу генов семейства донора
+        if (GeneticsCore.familyGenes.ContainsKey(donorPlant.family))
+        {
+            foreach (GeneType gene in GeneticsCore.familyGenes[donorPlant.family])
+            {
+                if (!pool.Contains(gene))
+                    pool.Add(gene);
+            }
+        }
+
+        // 3. Убираем активные гены основного растения,
+        // чтобы они не предлагались как спящие
+        if (targetPlant.activeGenes != null)
+        {
+            foreach (Gene active in targetPlant.activeGenes)
+            {
+                pool.Remove(active.type);
+            }
+        }
+
+        // 4. Перемешиваем общий пул
+        for (int i = 0; i < pool.Count; i++)
+        {
+            int rand = Random.Range(i, pool.Count);
+
+            GeneType temp = pool[i];
+            pool[i] = pool[rand];
+            pool[rand] = temp;
+        }
+
+        // 5. Берём 5 случайных генов
+        int count = Mathf.Min(5, pool.Count);
+
+        for (int i = 0; i < count; i++)
+        {
+            int value = Random.Range(minBonus, maxBonus + 1);
+            offeredGenes.Add(new Gene(pool[i], value));
+        }
+
+        Debug.Log($"[GeneSelectionUI] Generated {offeredGenes.Count} offered genes from {targetPlant.family} + {donorPlant.family}");
+    }
+
+    private void RefreshUI()
     {
         // Левая сторона — предложенные гены
         for (int i = 0; i < offeredButtons.Length; i++)
@@ -89,9 +148,9 @@ public class GeneSelectionUI : MonoBehaviour
             {
                 if (hasGene)
                 {
-                    Gene g = offeredGenes[i];
+                    Gene gene = offeredGenes[i];
                     string marker = i == selectedOfferedIndex ? "▶ " : "";
-                    offeredTexts[i].text = $"{marker}{g.type} +{g.value}";
+                    offeredTexts[i].text = $"{marker}{gene.type} +{gene.value}";
                 }
                 else
                 {
@@ -103,9 +162,10 @@ public class GeneSelectionUI : MonoBehaviour
         // Правая сторона — спящие гены основного растения
         for (int i = 0; i < targetButtons.Length; i++)
         {
-            bool hasGene = targetPlant != null &&
-                           targetPlant.dormantGenes != null &&
-                           i < targetPlant.dormantGenes.Count;
+            bool hasGene =
+                targetPlant != null &&
+                targetPlant.dormantGenes != null &&
+                i < targetPlant.dormantGenes.Count;
 
             if (targetButtons[i] != null)
                 targetButtons[i].interactable = hasGene;
@@ -114,8 +174,8 @@ public class GeneSelectionUI : MonoBehaviour
             {
                 if (hasGene)
                 {
-                    Gene g = targetPlant.dormantGenes[i];
-                    targetTexts[i].text = $"{g.type} +{g.value}";
+                    Gene gene = targetPlant.dormantGenes[i];
+                    targetTexts[i].text = $"{gene.type} +{gene.value}";
                 }
                 else
                 {
@@ -125,46 +185,62 @@ public class GeneSelectionUI : MonoBehaviour
         }
     }
 
-    void SelectOfferedGene(int index)
+    private void SelectOfferedGene(int index)
     {
         if (index < 0 || index >= offeredGenes.Count)
             return;
 
         selectedOfferedIndex = index;
-        RefreshUI();
 
-        Debug.Log($"[GeneSelectionUI] Выбран донорский ген: {offeredGenes[index].type} +{offeredGenes[index].value}");
+        Gene selected = offeredGenes[index];
+        Debug.Log($"[GeneSelectionUI] Выбран предложенный ген: {selected.type} +{selected.value}");
+
+        RefreshUI();
     }
 
-    void SelectTargetGene(int index)
+    private void SelectTargetGene(int index)
     {
         if (selectedOfferedIndex < 0)
         {
-            Debug.Log("Сначала выбери донорский ген слева.");
+            Debug.Log("Сначала выбери предложенный ген слева.");
             return;
         }
 
-        if (targetPlant == null || index < 0 || index >= targetPlant.dormantGenes.Count)
+        if (targetPlant == null || targetPlant.dormantGenes == null)
+            return;
+
+        if (index < 0 || index >= targetPlant.dormantGenes.Count)
             return;
 
         Gene offered = offeredGenes[selectedOfferedIndex];
-        Gene target = targetPlant.dormantGenes[index];
 
-        if (target.type == offered.type)
+        // 🔥 1. СНАЧАЛА ИЩЕМ: ЕСТЬ ЛИ УЖЕ ТАКОЙ ГЕН СРЕДИ СПЯЩИХ
+        Gene existingSameGene = targetPlant.dormantGenes.Find(g => g.type == offered.type);
+
+        if (existingSameGene != null)
         {
-            target.value += offered.value;
-            target.value = Mathf.Clamp(target.value, 1, 10);
+            int oldValue = existingSameGene.value;
 
-            Debug.Log($"🧬 Одинаковый ген: {target.type}. Сумма стала +{target.value}");
+            existingSameGene.value += offered.value;
+            existingSameGene.value = Mathf.Clamp(existingSameGene.value, 1, 10);
+
+            Debug.Log($"🧬 Ген уже есть: {existingSameGene.type}. Было +{oldValue}, добавили +{offered.value}, стало +{existingSameGene.value}");
+
+            // ВАЖНО:
+            // выбранный справа ген НЕ заменяем, потому что такой ген уже был найден и прокачан
         }
         else
         {
-            Debug.Log($"🔁 Замена гена: {target.type} +{target.value} → {offered.type} +{offered.value}");
+            // 🔁 2. ЕСЛИ ТАКОГО ГЕНА НЕТ — МЕНЯЕМ ВЫБРАННЫЙ СПЯЩИЙ ГЕН
+            Gene target = targetPlant.dormantGenes[index];
+
+            Debug.Log($"🔁 Замена: {target.type} +{target.value} → {offered.type} +{offered.value}");
 
             target.type = offered.type;
             target.value = Mathf.Clamp(offered.value, 1, 10);
         }
 
+        // Донор тратится только после успешного выбора
         if (inventory != null)
             inventory.ConsumeSelectedItem();
 
@@ -174,8 +250,11 @@ public class GeneSelectionUI : MonoBehaviour
     public void Close()
     {
         selectedOfferedIndex = -1;
+
         targetPlant = null;
+        donorPlant = null;
         inventory = null;
+
         offeredGenes.Clear();
 
         if (panel != null)

@@ -99,23 +99,10 @@ MonoBehaviour:
   itemData: {fileID: 11400000, guid: e62c8b9ea32cfbc4fa891f39d8d730d2, type: 2}
   plantInstance:
     baseData: {fileID: 11400000, guid: e62c8b9ea32cfbc4fa891f39d8d730d2, type: 2}
-    family: 0
-    activeGenes:
-    - type: 0
-      value: 10
-    - type: 1
-      value: 10
-    dormantGenes:
-    - type: 7
-      value: 2
-    - type: 4
-      value: 1
-    - type: 3
-      value: 2
-    - type: 5
-      value: 2
-    - type: 8
-      value: 1
+    family: 1
+    activeGenes: []
+    dormantGenes: []
+  autoGeneratePlantGenes: 0
   generateGenesInEditor: 1
 --- !u!114 &3642782511734595472
 MonoBehaviour:

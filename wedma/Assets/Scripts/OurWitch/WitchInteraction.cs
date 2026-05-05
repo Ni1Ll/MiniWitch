@@ -61,13 +61,18 @@ public class WitchInteraction : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
                 ClosePopupUI();
+
             return;
         }
 
         if (Input.GetKeyDown(KeyCode.I))
         {
-            var slot = inventory.GetSelectedSlot();
-            Debug.Log(slot.GetPlantInfo());
+            if (inventory != null)
+            {
+                var slot = inventory.GetSelectedSlot();
+                if (slot != null)
+                    Debug.Log(slot.GetPlantInfo());
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.G) && !isHolding)
@@ -85,7 +90,9 @@ public class WitchInteraction : MonoBehaviour
     void OpenPopupUI()
     {
         isUIOpen = true;
-        if (popupUI != null) popupUI.SetActive(true);
+
+        if (popupUI != null)
+            popupUI.SetActive(true);
 
         if (invectorController != null)
         {
@@ -101,7 +108,9 @@ public class WitchInteraction : MonoBehaviour
     void ClosePopupUI()
     {
         isUIOpen = false;
-        if (popupUI != null) popupUI.SetActive(false);
+
+        if (popupUI != null)
+            popupUI.SetActive(false);
 
         if (invectorController != null)
         {
@@ -145,15 +154,20 @@ public class WitchInteraction : MonoBehaviour
 
         if (bestOutline != currentTargetOutline)
         {
-            if (currentTargetOutline != null) currentTargetOutline.enabled = false;
+            if (currentTargetOutline != null)
+                currentTargetOutline.enabled = false;
+
             currentTargetOutline = bestOutline;
-            if (currentTargetOutline != null) currentTargetOutline.enabled = true;
+
+            if (currentTargetOutline != null)
+                currentTargetOutline.enabled = true;
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
         Outline outline = other.GetComponent<Outline>();
+
         if (outline != null && !reachableOutlines.Contains(outline))
             reachableOutlines.Add(outline);
     }
@@ -161,6 +175,7 @@ public class WitchInteraction : MonoBehaviour
     void OnTriggerExit(Collider other)
     {
         Outline outline = other.GetComponent<Outline>();
+
         if (outline != null)
         {
             outline.enabled = false;
@@ -185,7 +200,9 @@ public class WitchInteraction : MonoBehaviour
             {
                 if (targetObject == npcAgent)
                 {
-                    if (currentTargetOutline != null) currentTargetOutline.enabled = false;
+                    if (currentTargetOutline != null)
+                        currentTargetOutline.enabled = false;
+
                     OpenPopupUI();
                     return;
                 }
@@ -224,10 +241,14 @@ public class WitchInteraction : MonoBehaviour
 
                         if (animator != null)
                         {
-                            if (pendingAction == PlantActionType.Water) animator.SetTrigger("Water");
-                            else if (pendingAction == PlantActionType.Plant) animator.SetTrigger("Plant");
-                            else if (pendingAction == PlantActionType.Harvest) animator.SetTrigger("Harvest");
-                            else if (pendingAction == PlantActionType.Clear) animator.SetTrigger("Harvest");
+                            if (pendingAction == PlantActionType.Water)
+                                animator.SetTrigger("Water");
+                            else if (pendingAction == PlantActionType.Plant)
+                                animator.SetTrigger("Plant");
+                            else if (pendingAction == PlantActionType.Harvest)
+                                animator.SetTrigger("Harvest");
+                            else if (pendingAction == PlantActionType.Clear)
+                                animator.SetTrigger("Harvest");
                         }
                     }
                 }
@@ -254,7 +275,9 @@ public class WitchInteraction : MonoBehaviour
             if (targetObject != null)
             {
                 PlantPot pot = targetObject.GetComponent<PlantPot>();
-                if (pot != null) pot.SetWatering(false);
+
+                if (pot != null)
+                    pot.SetWatering(false);
             }
 
             CancelHoldInteraction();
@@ -266,13 +289,17 @@ public class WitchInteraction : MonoBehaviour
         if (targetObject != null)
         {
             PlantPot pot = targetObject.GetComponent<PlantPot>();
-            if (pot != null) pot.SetWatering(false);
+
+            if (pot != null)
+                pot.SetWatering(false);
         }
     }
 
     void FinishHoldInteraction()
     {
-        if (targetObject != null) ExecuteInteraction(targetObject);
+        if (targetObject != null)
+            ExecuteInteraction(targetObject);
+
         ResetHoldState();
     }
 
@@ -308,6 +335,7 @@ public class WitchInteraction : MonoBehaviour
     void ExecuteInteraction(GameObject obj)
     {
         PlantPot pot = obj.GetComponent<PlantPot>();
+
         if (pot != null)
         {
             pot.Interact(inventory);
@@ -316,34 +344,38 @@ public class WitchInteraction : MonoBehaviour
         }
 
         PickupItem item = obj.GetComponent<PickupItem>();
+
         if (item != null && item.itemData != null)
         {
             int leftover;
 
-            // 🔥 ВАЖНО: сохраняем гены при подборе
+            // Если у предмета уже есть гены — сохраняем их.
+            // Если генов нет, обычный AddItem сам создаст PlantInstance для PlantData.
             if (item.plantInstance != null)
             {
                 leftover = inventory.AddItem(item.itemData, 1, item.plantInstance);
-                Debug.Log("[WitchInteraction] Подобрал растение С ГЕНАМИ");
+                Debug.Log("[WitchInteraction] Подобрал предмет С ГЕНАМИ");
             }
             else
             {
                 leftover = inventory.AddItem(item.itemData, 1);
-                Debug.Log("[WitchInteraction] Подобрал обычный предмет БЕЗ ГЕНОВ");
+                Debug.Log("[WitchInteraction] Подобрал предмет БЕЗ plantInstance. Инвентарь сам создаст гены, если это PlantData.");
             }
 
             if (leftover == 0)
             {
                 Outline o = obj.GetComponent<Outline>();
-                if (o != null) o.enabled = false;
+                if (o != null)
+                    o.enabled = false;
 
                 Collider itemCol = item.GetComponent<Collider>();
-                if (itemCol != null) itemCol.enabled = false;
+                if (itemCol != null)
+                    itemCol.enabled = false;
 
                 Rigidbody rb = item.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
-                    rb.isKinematic = true; 
+                    rb.isKinematic = true;
                     rb.linearVelocity = Vector3.zero;
                 }
 
@@ -387,12 +419,16 @@ public class WitchInteraction : MonoBehaviour
 
     void HandleHotbarInput()
     {
+        if (inventory == null) return;
+
         int oldIndex = inventory.selectedHotbarIndex;
 
         float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-        if (scroll > 0f) inventory.ChangeSelectedSlot(-1);
-        else if (scroll < 0f) inventory.ChangeSelectedSlot(1);
+        if (scroll > 0f)
+            inventory.ChangeSelectedSlot(-1);
+        else if (scroll < 0f)
+            inventory.ChangeSelectedSlot(1);
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) inventory.selectedHotbarIndex = 0;
         if (Input.GetKeyDown(KeyCode.Alpha2)) inventory.selectedHotbarIndex = 1;
@@ -411,8 +447,12 @@ public class WitchInteraction : MonoBehaviour
 
     void DropItem()
     {
+        if (inventory == null) return;
+
         InventorySlot activeSlot = inventory.GetSelectedSlot();
-        if (activeSlot == null || activeSlot.IsEmpty) return;
+
+        if (activeSlot == null || activeSlot.IsEmpty)
+            return;
 
         Vector3 dropPos = transform.position + (transform.forward * 0.4f) + (Vector3.up * 0.8f);
 
@@ -430,12 +470,12 @@ public class WitchInteraction : MonoBehaviour
 
             Collider playerCollider = GetComponent<Collider>();
             Collider itemCollider = droppedObj.GetComponent<Collider>();
+
             if (playerCollider != null && itemCollider != null)
-            {
                 Physics.IgnoreCollision(playerCollider, itemCollider);
-            }
 
             Rigidbody rb = droppedObj.GetComponent<Rigidbody>();
+
             if (rb != null)
             {
                 rb.isKinematic = false;
@@ -462,9 +502,14 @@ public class WitchInteraction : MonoBehaviour
         if (currentSpawnedModel != null)
             Destroy(currentSpawnedModel);
 
+        if (inventory == null) return;
+
         InventorySlot activeSlot = inventory.GetSelectedSlot();
 
-        if (activeSlot != null && !activeSlot.IsEmpty && activeSlot.item.handVisualPrefab != null && handSocket != null)
+        if (activeSlot != null &&
+            !activeSlot.IsEmpty &&
+            activeSlot.item.handVisualPrefab != null &&
+            handSocket != null)
         {
             currentSpawnedModel = Instantiate(activeSlot.item.handVisualPrefab, handSocket);
             SetupInHand(currentSpawnedModel);
@@ -476,6 +521,7 @@ public class WitchInteraction : MonoBehaviour
         Vector3 originalScale = model.transform.localScale;
 
         Rigidbody rb = model.GetComponent<Rigidbody>();
+
         if (rb != null)
         {
             rb.isKinematic = true;

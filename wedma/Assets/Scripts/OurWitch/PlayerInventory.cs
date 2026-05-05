@@ -25,6 +25,12 @@ public class InventorySlot
 
         if (plantInstance == null) return "No genes";
 
+        if (plantInstance.activeGenes == null || plantInstance.activeGenes.Count == 0 ||
+            plantInstance.dormantGenes == null || plantInstance.dormantGenes.Count == 0)
+        {
+            return "No genes";
+        }
+
         string info = "=== GENES ===\n";
 
         info += "Active:\n";
@@ -64,11 +70,19 @@ public class PlayerInventory : MonoBehaviour
     }
 
     // ---------------------------
-    // ОБЫЧНЫЕ ПРЕДМЕТЫ БЕЗ ГЕНОВ
+    // ОБЫЧНЫЕ ПРЕДМЕТЫ / СВЕЖИЕ РАСТЕНИЯ БЕЗ ГЕНОВ
     // ---------------------------
     public int AddItem(ItemData data, int amount)
     {
         if (data == null) return amount;
+
+        // 🔥 ВАЖНО:
+        // Если в инвентарь попадает PlantData без PlantInstance,
+        // создаём гены прямо здесь.
+        if (data is PlantData plantData)
+        {
+            return AddItem(data, amount, new PlantInstance(plantData));
+        }
 
         if (!data.isTool)
         {
@@ -112,11 +126,18 @@ public class PlayerInventory : MonoBehaviour
     }
 
     // ---------------------------
-    // РАСТЕНИЯ С ГЕНАМИ
+    // РАСТЕНИЯ / УРОЖАЙ С ГЕНАМИ
     // ---------------------------
     public int AddItem(ItemData data, int amount, PlantInstance instance)
     {
         if (data == null) return amount;
+
+        // 🔥 Если это PlantData, но instance пустой/битый/без генов —
+        // создаём нормальный PlantInstance.
+        if (data is PlantData plantData && !PlantInstanceHasGenes(instance))
+        {
+            instance = new PlantInstance(plantData);
+        }
 
         // 1. Сначала пробуем положить в выбранный хотбар-слот
         InventorySlot selectedSlot = GetSelectedSlot();
@@ -211,10 +232,20 @@ public class PlayerInventory : MonoBehaviour
         if (witch != null) witch.UpdateHandVisuals();
     }
 
+    private bool PlantInstanceHasGenes(PlantInstance instance)
+    {
+        return instance != null &&
+               instance.baseData != null &&
+               instance.activeGenes != null &&
+               instance.dormantGenes != null &&
+               instance.activeGenes.Count > 0 &&
+               instance.dormantGenes.Count > 0;
+    }
+
     private PlantInstance ClonePlant(PlantInstance original)
     {
-        if (original == null) return null;
-        if (original.baseData == null) return null;
+        if (!PlantInstanceHasGenes(original))
+            return null;
 
         PlantInstance clone = new PlantInstance(original.baseData);
 

@@ -21,7 +21,7 @@ MonoBehaviour:
   dropPrefab: {fileID: 6737505733466099402, guid: c37d3b98f3a93784d8501805feb01c44, type: 3}
   sellPrice: 15
   buyPrice: 30
-  family: 0
+  family: 2
   growthPrefabs:
   - {fileID: 3442945737286156098, guid: a651b9682a9ec8c49a5d892f04d20cfb, type: 3}
   - {fileID: 765087064666381282, guid: 28178dd14377ae54885b0c07156f6e7a, type: 3}

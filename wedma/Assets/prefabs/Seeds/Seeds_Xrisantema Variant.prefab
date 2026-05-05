@@ -52,6 +52,18 @@ PrefabInstance:
       propertyPath: itemData
       value: 
       objectReference: {fileID: 11400000, guid: f3ba450ab6f695b4a8a2052c8b426188, type: 2}
+    - target: {fileID: 8430487571336541282, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: generateGenesInEditor
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8430487571336541282, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: autoGeneratePlantGenes
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8430487571336541282, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
+      propertyPath: plantInstance.baseData
+      value: 
+      objectReference: {fileID: 11400000, guid: f3ba450ab6f695b4a8a2052c8b426188, type: 2}
     - target: {fileID: 9148859132371853892, guid: 7b1f8f20dcd5eb94c9944e4a0b2cdc72, type: 3}
       propertyPath: m_Name
       value: Seeds_Xrisantema Variant

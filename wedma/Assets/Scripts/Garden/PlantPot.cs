@@ -104,27 +104,22 @@ public class PlantPot : MonoBehaviour
         return 3;
     }
 
-    // true = донор тратится сразу
-    // false = донор не тратится сейчас
     bool TryCrossbreed(PlantInstance donor, PlayerInventory inventory)
     {
-        if (currentPlantInstance == null)
+        if (!PlantInstanceHasGenes(currentPlantInstance))
         {
-            Debug.LogWarning("❌ У текущего растения нет PlantInstance!");
+            Debug.LogWarning("❌ У текущего растения нет нормального PlantInstance!");
             return false;
         }
 
-        if (donor == null)
+        if (!PlantInstanceHasGenes(donor))
         {
-            Debug.LogWarning("❌ Донор пустой!");
+            Debug.LogWarning("❌ У донора нет нормальных генов!");
             return false;
         }
 
-        if (donor.family != currentPlantInstance.family)
-        {
-            Debug.Log("❌ Разные семейства!");
-            return false;
-        }
+        // Семейства НЕ запрещают скрещивание.
+        // Family нужен только для генерации стартовых генов и пула UI.
 
         int donorStage = donorStageDebug;
         int targetStage = GetGrowthStage();
@@ -168,7 +163,7 @@ public class PlantPot : MonoBehaviour
             Debug.Log("💀 Растение погибло при селекции!");
             Die();
 
-            // донор потрачен, потому что попытка была
+            // Донор потрачен, потому что попытка была.
             return true;
         }
 
@@ -182,7 +177,7 @@ public class PlantPot : MonoBehaviour
 
         Debug.Log($"✅ Успех! Открыт UI выбора генов. Диапазон бонуса: +{min}...+{max}");
 
-        // донор НЕ тратим сейчас. Он потратится после выбора гена в GeneSelectionUI
+        // Донор НЕ тратим сейчас. Он потратится после выбора гена в GeneSelectionUI.
         return false;
     }
 
@@ -195,6 +190,7 @@ public class PlantPot : MonoBehaviour
         if (currentGrowth >= 100f) return;
 
         float tempDiff = Mathf.Abs(currentTemperature - currentPlant.optimalTemp);
+
         if (tempDiff > currentPlant.tempRange)
             currentHealth -= 5f * Time.deltaTime;
 
@@ -222,6 +218,7 @@ public class PlantPot : MonoBehaviour
         if (currentPlant == null || currentPlant.growthPrefabs == null) return;
 
         int phase = Mathf.Clamp((int)(currentGrowth / 25f), 0, currentPlant.growthPrefabs.Length - 1);
+
         if (phase == currentPhaseIndex) return;
 
         currentPhaseIndex = phase;
@@ -289,17 +286,25 @@ public class PlantPot : MonoBehaviour
         currentSoilVisual.transform.localScale = Vector3.one;
     }
 
-    void Plant(PlantData newData)
+    void Plant(PlantData newData, PlantInstance seedInstance = null)
     {
         currentPlant = newData;
-        currentPlantInstance = new PlantInstance(newData);
+
+        if (PlantInstanceHasGenes(seedInstance))
+        {
+            currentPlantInstance = ClonePlant(seedInstance);
+            Debug.Log($"🌱 Посажено с генами семени: {currentPlant.itemName}");
+        }
+        else
+        {
+            currentPlantInstance = new PlantInstance(newData);
+            Debug.Log($"🌱 Посажено, гены созданы заново: {currentPlant.itemName}");
+        }
 
         currentGrowth = 0f;
         currentHealth = 100f;
         isDead = false;
         currentPhaseIndex = -1;
-
-        Debug.Log($"🌱 Посажено: {currentPlant.itemName}");
     }
 
     void Die()
@@ -324,6 +329,35 @@ public class PlantPot : MonoBehaviour
         currentPhaseIndex = -1;
     }
 
+    private bool PlantInstanceHasGenes(PlantInstance instance)
+    {
+        return instance != null &&
+               instance.baseData != null &&
+               instance.activeGenes != null &&
+               instance.dormantGenes != null &&
+               instance.activeGenes.Count > 0 &&
+               instance.dormantGenes.Count > 0;
+    }
+
+    private PlantInstance ClonePlant(PlantInstance original)
+    {
+        if (!PlantInstanceHasGenes(original))
+            return null;
+
+        PlantInstance clone = new PlantInstance(original.baseData);
+
+        clone.activeGenes.Clear();
+        clone.dormantGenes.Clear();
+
+        foreach (var g in original.activeGenes)
+            clone.activeGenes.Add(new Gene(g.type, g.value));
+
+        foreach (var g in original.dormantGenes)
+            clone.dormantGenes.Add(new Gene(g.type, g.value));
+
+        return clone;
+    }
+
     private void Harvest(PlayerInventory inventory)
     {
         if (currentPlant == null) return;
@@ -337,20 +371,25 @@ public class PlantPot : MonoBehaviour
 
         PlantInstance savedGenes = currentPlantInstance;
 
-        if (savedGenes == null)
+        if (!PlantInstanceHasGenes(savedGenes))
+        {
+            Debug.LogWarning("⚠️ У растения не было генов при сборе урожая. Создаю резервные гены.");
             savedGenes = new PlantInstance(currentPlant);
+        }
 
         int amountToAdd = Mathf.Max(1, currentPlant.harvestAmount);
         int totalLeftover = 0;
 
         for (int i = 0; i < amountToAdd; i++)
         {
+            // ВАЖНО: урожай берёт гены текущего растения,
+            // уже с учётом селекции.
             totalLeftover += inventory.AddItem(currentPlant.harvestResult, 1, savedGenes);
         }
 
         if (totalLeftover == 0)
         {
-            Debug.Log($"🌾 Собран урожай с генами: {currentPlant.harvestResult.itemName}");
+            Debug.Log($"🌾 Собран урожай с генами от растения: {currentPlant.harvestResult.itemName}");
             ClearPot();
         }
         else
@@ -374,6 +413,7 @@ public class PlantPot : MonoBehaviour
         }
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
+
         if (activeSlot == null) return PlantActionType.None;
 
         // 100% = урожай
@@ -383,12 +423,12 @@ public class PlantPot : MonoBehaviour
             return PlantActionType.Harvest;
         }
 
-        // Пустая рука + растение не готово = выкопать растение с генами
+        // Пустая рука + растение не готово = выкопать растение с генами.
         if (currentPlant != null && currentGrowth < 100f && activeSlot.IsEmpty)
         {
             PlantInstance savedPlant = currentPlantInstance;
 
-            if (savedPlant == null)
+            if (!PlantInstanceHasGenes(savedPlant))
                 savedPlant = new PlantInstance(currentPlant);
 
             int leftover = inventory.AddItem(currentPlant, 1, savedPlant);
@@ -417,7 +457,7 @@ public class PlantPot : MonoBehaviour
         {
             PlantInstance donor = activeSlot.plantInstance;
 
-            if (donor == null)
+            if (!PlantInstanceHasGenes(donor))
                 donor = new PlantInstance((PlantData)activeSlot.item);
 
             bool consumeDonorNow = TryCrossbreed(donor, inventory);
@@ -431,7 +471,11 @@ public class PlantPot : MonoBehaviour
         // Пустой горшок + в руке растение = посадка
         if (currentPlant == null && activeSlot.item is PlantData)
         {
-            Plant((PlantData)activeSlot.item);
+            PlantData seedData = (PlantData)activeSlot.item;
+
+            // ВАЖНО: сажаем именно с генами семени из руки.
+            Plant(seedData, activeSlot.plantInstance);
+
             inventory.ConsumeSelectedItem();
             return PlantActionType.Plant;
         }
@@ -445,6 +489,7 @@ public class PlantPot : MonoBehaviour
         if (inventory == null) return PlantActionType.None;
 
         InventorySlot activeSlot = inventory.GetSelectedSlot();
+
         if (activeSlot == null) return PlantActionType.None;
 
         // 100% = урожай

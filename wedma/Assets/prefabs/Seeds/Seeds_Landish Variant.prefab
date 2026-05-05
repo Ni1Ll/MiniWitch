@@ -56,6 +56,18 @@ PrefabInstance:
       propertyPath: itemData
       value: 
       objectReference: {fileID: 11400000, guid: 0bfb1859d3011e64f926a0e6839555e3, type: 2}
+    - target: {fileID: 7986707310272386370, guid: ed48c435db803ca49a3bef074ee4a9f3, type: 3}
+      propertyPath: generateGenesInEditor
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986707310272386370, guid: ed48c435db803ca49a3bef074ee4a9f3, type: 3}
+      propertyPath: autoGeneratePlantGenes
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986707310272386370, guid: ed48c435db803ca49a3bef074ee4a9f3, type: 3}
+      propertyPath: plantInstance.baseData
+      value: 
+      objectReference: {fileID: 11400000, guid: 0bfb1859d3011e64f926a0e6839555e3, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
