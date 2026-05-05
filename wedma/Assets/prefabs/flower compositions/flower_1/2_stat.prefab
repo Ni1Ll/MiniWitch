@@ -44,7 +44,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1438963347450941049, guid: 2c4854af0e46b3f43986ad171cd83c7a, type: 3}
       propertyPath: InitialModule.maxNumParticles
-      value: 100
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4549538048048708137, guid: 2c4854af0e46b3f43986ad171cd83c7a, type: 3}
       propertyPath: m_LocalScale.x

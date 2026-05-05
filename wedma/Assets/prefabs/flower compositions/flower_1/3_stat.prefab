@@ -196,6 +196,10 @@ PrefabInstance:
       propertyPath: ShapeModule.angle
       value: 17.83
       objectReference: {fileID: 0}
+    - target: {fileID: 1438963347450941049, guid: 2c4854af0e46b3f43986ad171cd83c7a, type: 3}
+      propertyPath: InitialModule.maxNumParticles
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 4549538048048708137, guid: 2c4854af0e46b3f43986ad171cd83c7a, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.91877985
