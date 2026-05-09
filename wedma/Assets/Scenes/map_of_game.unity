@@ -61675,16 +61675,28 @@ PrefabInstance:
       objectReference: {fileID: 250014955}
     - target: {fileID: 228241424650104107, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
       propertyPath: allRecipes.Array.size
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 228241424650104107, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
       propertyPath: playerInteractionScript
       value: 
       objectReference: {fileID: 250014951}
     - target: {fileID: 228241424650104107, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
+      propertyPath: 'allRecipes.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: b3fd537e3a75c53419784ce9fd5e8b48, type: 2}
+    - target: {fileID: 228241424650104107, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
       propertyPath: 'allRecipes.Array.data[1]'
       value: 
       objectReference: {fileID: 11400000, guid: 21e6a40964a3c474e891c61fd7aa3d73, type: 2}
+    - target: {fileID: 228241424650104107, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
+      propertyPath: 'allRecipes.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: ad89ab997edd21146b12b34887e45a17, type: 2}
+    - target: {fileID: 228241424650104107, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
+      propertyPath: 'allRecipes.Array.data[3]'
+      value: 
+      objectReference: {fileID: 11400000, guid: a76ab326301d26b4aa3a51b1eedc2871, type: 2}
     - target: {fileID: 7274273886365928614, guid: 3d180940746caf84a939bc5e8b573502, type: 3}
       propertyPath: m_Name
       value: Kotel
