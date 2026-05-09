@@ -14,7 +14,7 @@ public class HandGeneDebugUI : MonoBehaviour
 
         if (inventory == null)
         {
-            text.text = "No inventory";
+            text.text = "Нет инвентаря";
             return;
         }
 
@@ -22,38 +22,37 @@ public class HandGeneDebugUI : MonoBehaviour
 
         if (slot == null || slot.IsEmpty)
         {
-            text.text = "Hand: Empty";
+            text.text = "В руке: пусто";
             return;
         }
 
         if (slot.item == null)
         {
-            text.text = "Hand: Missing item";
+            text.text = "В руке: предмет отсутствует";
             return;
         }
 
-        string result = $"Hand: {slot.item.itemName}\n";
+        string result = $"В руке: {slot.item.itemName}\n";
 
-        // Инструменты, зелья, обычные предметы без генов
         if (slot.plantInstance == null)
         {
-            result += "\nNo genes";
+            result += "\nГенов нет";
             text.text = result;
             return;
         }
 
-        result += "\nACTIVE:\n";
+        result += "\nАКТИВНЫЕ:\n";
         if (slot.plantInstance.activeGenes != null)
         {
             foreach (var g in slot.plantInstance.activeGenes)
-                result += $"{g.type} +{g.value}\n";
+                result += $"{GeneName.Ru(g.type)} +{g.value}\n";
         }
 
-        result += "\nDORMANT:\n";
+        result += "\nСПЯЩИЕ:\n";
         if (slot.plantInstance.dormantGenes != null)
         {
             foreach (var g in slot.plantInstance.dormantGenes)
-                result += $"{g.type} +{g.value}\n";
+                result += $"{GeneName.Ru(g.type)} +{g.value}\n";
         }
 
         text.text = result;

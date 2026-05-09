@@ -163,9 +163,9 @@ public class GeneSelectionUI : MonoBehaviour
                     Gene gene = offeredGenes[i];
 
                     string marker = i == selectedOfferedIndex ? "▶ " : "";
-                    string usedText = offeredUsed[i] ? " (USED)" : "";
+                    string usedText = offeredUsed[i] ? " (исп.)" : "";
 
-                    offeredTexts[i].text = $"{marker}{gene.type} +{gene.value}{usedText}";
+                    offeredTexts[i].text = $"{marker}{GeneName.Ru(gene.type)} +{gene.value}{usedText}";
                 }
                 else
                 {
@@ -190,7 +190,7 @@ public class GeneSelectionUI : MonoBehaviour
                 if (hasGene)
                 {
                     Gene gene = targetPlant.dormantGenes[i];
-                    targetTexts[i].text = $"{gene.type} +{gene.value}";
+                    targetTexts[i].text = $"{GeneName.Ru(gene.type)} +{gene.value}";
                 }
                 else
                 {
@@ -211,7 +211,7 @@ public class GeneSelectionUI : MonoBehaviour
         selectedOfferedIndex = index;
 
         Gene selected = offeredGenes[index];
-        Debug.Log($"[GeneSelectionUI] Выбран предложенный ген: {selected.type} +{selected.value}");
+        Debug.Log($"[GeneSelectionUI] Выбран предложенный ген: {GeneName.Ru(selected.type)} +{selected.value}");
 
         RefreshUI();
     }
@@ -251,7 +251,7 @@ public class GeneSelectionUI : MonoBehaviour
             existingSameGene.value += offered.value;
             existingSameGene.value = Mathf.Clamp(existingSameGene.value, 1, 10);
 
-            Debug.Log($"🧬 Ген уже есть: {existingSameGene.type}. Было +{oldValue}, добавили +{offered.value}, стало +{existingSameGene.value}");
+            Debug.Log($"🧬 Ген уже есть: {GeneName.Ru(existingSameGene.type)}. Было +{oldValue}, добавили +{offered.value}, стало +{existingSameGene.value}");
 
             // Только при суммировании донорская кнопка используется
             offeredUsed[selectedOfferedIndex] = true;
@@ -270,7 +270,7 @@ public class GeneSelectionUI : MonoBehaviour
         // -------------------------------
         Gene target = targetPlant.dormantGenes[index];
 
-        Debug.Log($"🔁 Свап: LEFT {offered.type} +{offered.value} ↔ RIGHT {target.type} +{target.value}");
+        Debug.Log($"🔁 Свап: LEFT {GeneName.Ru(offered.type)} +{offered.value} ↔ RIGHT {GeneName.Ru(target.type)} +{target.value}");
 
         // сохраняем старый правый ген
         Gene oldTargetGene = new Gene(target.type, target.value);
@@ -282,11 +282,7 @@ public class GeneSelectionUI : MonoBehaviour
         // левая кнопка получает старый правый ген
         offeredGenes[selectedOfferedIndex] = oldTargetGene;
 
-        // ВАЖНО:
-        // кнопку НЕ деактивируем
-        // selectedOfferedIndex оставляем выбранным,
-        // чтобы можно было сразу поменять обратно
-
+        // Кнопку НЕ деактивируем при свапе, чтобы можно было поменять обратно
         hasAppliedAnyChange = true;
 
         RefreshUI();

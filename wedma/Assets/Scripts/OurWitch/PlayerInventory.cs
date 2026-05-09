@@ -23,26 +23,27 @@ public class InventorySlot
         Debug.Log("ITEM: " + item);
         Debug.Log("INSTANCE: " + plantInstance);
 
-        if (plantInstance == null) return "No genes";
+        if (plantInstance == null)
+            return "Генов нет";
 
         if (plantInstance.activeGenes == null || plantInstance.activeGenes.Count == 0 ||
             plantInstance.dormantGenes == null || plantInstance.dormantGenes.Count == 0)
         {
-            return "No genes";
+            return "Генов нет";
         }
 
-        string info = "=== GENES ===\n";
+        string info = "=== ГЕНЫ ===\n";
 
-        info += "Active:\n";
+        info += "Активные:\n";
         foreach (var g in plantInstance.activeGenes)
         {
-            info += $"{g.type} +{g.value}\n";
+            info += $"{GeneName.Ru(g.type)} +{g.value}\n";
         }
 
-        info += "\nDormant:\n";
+        info += "\nСпящие:\n";
         foreach (var g in plantInstance.dormantGenes)
         {
-            info += $"{g.type} +{g.value}\n";
+            info += $"{GeneName.Ru(g.type)} +{g.value}\n";
         }
 
         return info;
@@ -76,7 +77,6 @@ public class PlayerInventory : MonoBehaviour
     {
         if (data == null) return amount;
 
-        // 🔥 ВАЖНО:
         // Если в инвентарь попадает PlantData без PlantInstance,
         // создаём гены прямо здесь.
         if (data is PlantData plantData)
@@ -132,7 +132,7 @@ public class PlayerInventory : MonoBehaviour
     {
         if (data == null) return amount;
 
-        // 🔥 Если это PlantData, но instance пустой/битый/без генов —
+        // Если это PlantData, но instance пустой/битый/без генов —
         // создаём нормальный PlantInstance.
         if (data is PlantData plantData && !PlantInstanceHasGenes(instance))
         {
