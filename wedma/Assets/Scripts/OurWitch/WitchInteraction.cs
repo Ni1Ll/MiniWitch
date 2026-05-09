@@ -376,7 +376,6 @@ public class WitchInteraction : MonoBehaviour
                 if (rb != null)
                 {
                     rb.isKinematic = true;
-                    rb.linearVelocity = Vector3.zero;
                 }
 
                 if (animator != null)
