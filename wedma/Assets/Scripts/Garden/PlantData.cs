@@ -8,6 +8,9 @@ public class PlantData : ItemData
     [Header("Генетика")]
     public PlantFamily family;
 
+    [Tooltip("Первый врождённый активный ген растения. Второй активный слот пока пустой.")]
+    public GeneType defaultActiveGene;
+
     // 🌱 ФАЗЫ РОСТА
     [Header("Фазы роста")]
     public GameObject[] growthPrefabs = new GameObject[4];

@@ -22,6 +22,7 @@ MonoBehaviour:
   sellPrice: 15
   buyPrice: 30
   family: 1
+  defaultActiveGene: 9
   growthPrefabs:
   - {fileID: 3442945737286156098, guid: a651b9682a9ec8c49a5d892f04d20cfb, type: 3}
   - {fileID: 8941790580323167351, guid: 22edf122e3d3d1a478a38b1d3950c2cc, type: 3}

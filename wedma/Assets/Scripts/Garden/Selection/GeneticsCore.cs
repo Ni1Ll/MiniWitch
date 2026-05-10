@@ -69,23 +69,9 @@ public static class GeneticsCore
         }
     };
 
-    // --- АКТИВНЫЕ ГЕНЫ ПО СЕМЕЙСТВАМ ---
-
-    public static Dictionary<PlantFamily, GeneType[]> activeGenesMap = new Dictionary<PlantFamily, GeneType[]>()
-    {
-        { PlantFamily.FieldFamily, new[] { GeneType.Vigor, GeneType.Calm } },
-        { PlantFamily.SunMoonFamily, new[] { GeneType.Acceleration, GeneType.Slowdown } },
-        { PlantFamily.NobleFamily, new[] { GeneType.Charm, GeneType.Oblivion } },
-        { PlantFamily.SpringFamily, new[] { GeneType.Scaring, GeneType.Attraction } }
-    };
-
-    // --- НАСТРОЙКИ ЗНАЧЕНИЙ ---
-
     private const int ActiveGeneValue = 10;
     private const int DormantGeneMinValue = 1;
     private const int DormantGeneMaxValue = 3;
-
-    // --- ГЕНЕРАЦИЯ ---
 
     public static void GenerateGenes(PlantInstance plant)
     {
@@ -95,37 +81,35 @@ public static class GeneticsCore
             return;
         }
 
+        if (plant.baseData == null)
+        {
+            Debug.LogWarning("[GeneticsCore] PlantInstance has no baseData.");
+            return;
+        }
+
         if (!familyGenes.ContainsKey(plant.family))
         {
             Debug.LogWarning($"[GeneticsCore] Нет списка генов для семейства: {plant.family}");
             return;
         }
 
-        if (!activeGenesMap.ContainsKey(plant.family))
-        {
-            Debug.LogWarning($"[GeneticsCore] Нет активных генов для семейства: {plant.family}");
-            return;
-        }
-
         plant.activeGenes.Clear();
         plant.dormantGenes.Clear();
 
-        // 1. Активные гены всегда фиксированные и максимальные
-        foreach (GeneType geneType in activeGenesMap[plant.family])
-        {
-            plant.activeGenes.Add(new Gene(geneType, ActiveGeneValue));
-        }
+        // 1. Первый активный ген — конкретный ген растения
+        GeneType activeGene = plant.baseData.defaultActiveGene;
+        plant.activeGenes.Add(new Gene(activeGene, ActiveGeneValue));
 
-        // 2. Пул спящих генов из семейства
+        // 2. Второй активный слот пока пустой.
+        // Мы НЕ добавляем Empty в список, чтобы не ломать логику.
+        // UI просто будет показывать "Пусто" как второй слот.
+
+        // 3. Спящие гены — 5 случайных из семейства
         List<GeneType> pool = new List<GeneType>(familyGenes[plant.family]);
 
-        // Убираем активные из пула, чтобы они не попали в спящие
-        foreach (GeneType active in activeGenesMap[plant.family])
-        {
-            pool.Remove(active);
-        }
+        // Убираем врождённый активный ген, чтобы он не дублировался в спящих
+        pool.Remove(activeGene);
 
-        // 3. Рандомим 5 уникальных спящих генов
         for (int i = 0; i < 5; i++)
         {
             if (pool.Count == 0) break;
