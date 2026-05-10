@@ -3,34 +3,36 @@ using UnityEngine;
 
 public class Marker3d : MonoBehaviour
 {
-    [SerializeField] private Transform head; // Тянем сюда кость головы
-    [SerializeField] private GameObject markerRoot; // Тот самый пустой объект с дочерними маркерами
-    
+    [SerializeField] private Transform head;
+    [SerializeField] private GameObject markerRoot;
+
     private List<Transform> childMarkers = new List<Transform>();
     private Transform rootTransform;
     private bool isAnyMarkerActive = false;
 
     void Awake()
     {
-        // Кэшируем трансформ самого корня маркеров для скорости
+        if (markerRoot == null)
+        {
+            Debug.LogWarning("[Marker3d] Marker Root не назначен.");
+            return;
+        }
+
         rootTransform = markerRoot.transform;
 
-        if (markerRoot != null)
+        foreach (Transform child in markerRoot.transform)
         {
-            foreach (Transform child in markerRoot.transform)
-            {
-                childMarkers.Add(child);
-            }
+            childMarkers.Add(child);
+            child.gameObject.SetActive(false);
         }
+
+        CheckActiveStatus();
     }
 
-    // Используем LateUpdate, чтобы позиция обновлялась ПОСЛЕ того, 
-    // как аниматор повернул персонажа и голову
     void LateUpdate()
     {
-        if (isAnyMarkerActive && head != null)
+        if (isAnyMarkerActive && head != null && rootTransform != null)
         {
-            // Просто копируем позицию. Вращение остается мировым (какое настроил).
             rootTransform.position = head.position;
         }
     }
@@ -53,9 +55,19 @@ public class Marker3d : MonoBehaviour
         }
     }
 
+    public void DisableAllMarkers()
+    {
+        foreach (Transform marker in childMarkers)
+        {
+            if (marker != null)
+                marker.gameObject.SetActive(false);
+        }
+
+        isAnyMarkerActive = false;
+    }
+
     private void CheckActiveStatus()
     {
-        // Если ни один маркер не включен, Update/LateUpdate не будет гонять копирование позиции
-        isAnyMarkerActive = childMarkers.Exists(m => m.gameObject.activeSelf);
+        isAnyMarkerActive = childMarkers.Exists(m => m != null && m.gameObject.activeSelf);
     }
 }

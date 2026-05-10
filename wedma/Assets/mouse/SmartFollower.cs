@@ -1,29 +1,34 @@
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections.Generic;
 
 public class SmartFollower : MonoBehaviour
 {
     [Header("Optimization")]
     [SerializeField] private float minUpdateInterval = 3f;
     [SerializeField] private float maxUpdateInterval = 5f;
-    [SerializeField] private float emergencyDistance = 10f; 
+    [SerializeField] private float emergencyDistance = 10f;
 
     private float pathUpdateTimer;
-    private Marker3d mark; // Ссылка на скрипт маркера заказов, чтобы управлять его видимостью
+    private Marker3d mark;
 
     [Header("Refs")]
     public Transform player;
-    [SerializeField] private Transform orderTarget; 
-    
+    public Transform orderTarget;
 
     [Header("Follow Settings")]
     [SerializeField] private float followRadius = 3f;
     [SerializeField] private float moveSpeed = 4f;
 
+    [Header("Rotation Settings")]
+    [SerializeField] private float lookRotationSpeed = 18f;
+    [SerializeField] private float agentAngularSpeed = 720f;
+    [SerializeField] private float agentAcceleration = 20f;
+
     [Header("Orders")]
-    [SerializeField] private List<string> orderList = new List<string> { "Пицца", "Кофе", "Посылка" };
     public string currentOrderName = "";
+
+    [Header("Marker")]
+    [SerializeField] private int orderMarkerIndex = 0;
 
     private NavMeshAgent agent;
     private Animator animator;
@@ -44,57 +49,90 @@ public class SmartFollower : MonoBehaviour
 
     void Start()
     {
-        mark = GetComponent<Marker3d>(); // Получаем ссылку на скрипт маркера заказов
-        mark.DisableMarker(0); // Изначально спрятать маркеры заказов. Тест, потом убрать когда будут сохранения
+        mark = GetComponent<Marker3d>();
+
+        if (mark != null)
+            mark.DisableMarker(orderMarkerIndex);
+
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        //mark.SetActive(false);// Изначально спрятать маркеры заказов .Тест пот убрать когда будут сохранения
-        if (agent != null)
-            agent.speed = moveSpeed;
 
-        lastPlayerPos = player.position;
-        // Сразу задаем первый интервал
+        if (agent != null)
+        {
+            agent.speed = moveSpeed;
+            agent.angularSpeed = agentAngularSpeed;
+            agent.acceleration = agentAcceleration;
+        }
+
+        if (player != null)
+            lastPlayerPos = player.position;
+
         pathUpdateTimer = Random.Range(minUpdateInterval, maxUpdateInterval);
     }
 
     void Update()
     {
-        // Кнопка U для заказа
-        if (Input.GetKeyDown(KeyCode.U) && (currentState == State.Follow || currentState == State.Idle))
-        {
-            AcceptOrder();
-        }
+        if (player == null || agent == null)
+            return;
 
         switch (currentState)
         {
-            case State.Idle: HandleIdle(); break;
-            case State.Follow: HandleFollow(); break;
-            case State.GoToOrder: HandleOrderLogic(); break;
-            case State.ReturnWithOrder: HandleReturnLogic(); break;
-            case State.HasOrder: HandleHasOrder(); break;
+            case State.Idle:
+                HandleIdle();
+                break;
+
+            case State.Follow:
+                HandleFollow();
+                break;
+
+            case State.GoToOrder:
+                HandleOrderLogic();
+                break;
+
+            case State.ReturnWithOrder:
+                HandleReturnLogic();
+                break;
+
+            case State.HasOrder:
+                HandleHasOrder();
+                break;
         }
 
         UpdateAnimations();
     }
 
-    // ---------------- СИСТЕМА ЗАКАЗОВ ----------------
+    // ---------------- СИСТЕМА ЗАКАЗОВ ДЛЯ NPC ----------------
 
-    void AcceptOrder()
+    public void AcceptOrder()
     {
-        if (orderList.Count > 0 && orderTarget != null)
+        if (orderTarget == null)
         {
-            currentOrderName = orderList[0];
-            orderList.RemoveAt(0);
+            Debug.LogWarning("[SmartFollower] Order Target не назначен.");
+            return;
+        }
 
-            Debug.Log($"Принял заказ: {currentOrderName}. Выдвигаюсь!");
-            currentState = State.GoToOrder;
+        currentOrderName = "Новый заказ";
+
+        Debug.Log($"Принял заказ: {currentOrderName}. Выдвигаюсь!");
+
+        currentState = State.GoToOrder;
+
+        if (mark != null)
+            mark.DisableMarker(orderMarkerIndex);
+
+        if (agent != null && agent.isOnNavMesh)
+        {
             agent.isStopped = false;
+            agent.ResetPath();
             agent.SetDestination(orderTarget.position);
         }
     }
 
     void HandleOrderLogic()
     {
+        if (agent == null || !agent.isOnNavMesh)
+            return;
+
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
             Debug.Log($"Забрал {currentOrderName}! Возвращаюсь.");
@@ -104,10 +142,15 @@ public class SmartFollower : MonoBehaviour
 
     void HandleReturnLogic()
     {
-        //mark.SetActive(true); // Показываем маркеры заказов, когда возвращаемся к игроку
-        mark.EnableMarker(0); // Скрываем маркеры заказов, когда возвращаемся к игроку
-        agent.isStopped = false;
-        agent.SetDestination(player.position);
+        // Маркер включается именно когда курьер уже возвращается с заказом.
+        if (mark != null)
+            mark.EnableMarker(orderMarkerIndex);
+
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(player.position);
+        }
 
         if (Vector3.Distance(transform.position, player.position) <= followRadius)
         {
@@ -121,30 +164,38 @@ public class SmartFollower : MonoBehaviour
         HandleFollow();
     }
 
+    public void HideOrderMarker()
+    {
+        if (mark != null)
+            mark.DisableMarker(orderMarkerIndex);
+    }
+
     // ---------------- УМНОЕ ПРЕСЛЕДОВАНИЕ ----------------
 
     void HandleFollow()
     {
-        // Считаем вектор движения игрока
         Vector3 playerMovement = player.position - lastPlayerPos;
-        float playerSpeed = playerMovement.magnitude / Time.deltaTime;
-        Vector3 playerDir = playerMovement.normalized;
+
+        float playerSpeed = 0f;
+        if (Time.deltaTime > 0f)
+            playerSpeed = playerMovement.magnitude / Time.deltaTime;
+
+        Vector3 playerDir = playerMovement.sqrMagnitude > 0.001f
+            ? playerMovement.normalized
+            : transform.forward;
+
         lastPlayerPos = player.position;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // Обновляем таймер
         pathUpdateTimer -= Time.deltaTime;
 
-        // 1. Проверка на "столкновение" (делаем каждый кадр для плавности)
-        // Если бот слишком близко, а игрок почти стоит - стоп
-        if (distanceToPlayer < (followRadius * 0.5f) && playerSpeed < 0.5f)
+        if (distanceToPlayer < followRadius * 0.5f && playerSpeed < 0.5f)
         {
             HandleIdle();
             return;
         }
 
-        // 2. Логика обновления пути по таймеру
         bool timeToUpdate = pathUpdateTimer <= 0f;
         bool playerTooFar = distanceToPlayer > emergencyDistance;
 
@@ -154,14 +205,12 @@ public class SmartFollower : MonoBehaviour
 
             Vector3 targetDestination = player.position;
 
-            // Если игрок идет, целимся ему "на ход"
             if (playerSpeed > 0.8f)
             {
-                Vector3 futurePoint = player.position + (playerDir * followRadius);
+                Vector3 futurePoint = player.position + playerDir * followRadius;
+
                 if (NavMesh.SamplePosition(futurePoint, out NavMeshHit hit, 2f, NavMesh.AllAreas))
-                {
                     targetDestination = hit.position;
-                }
             }
 
             if (agent.isOnNavMesh)
@@ -170,45 +219,50 @@ public class SmartFollower : MonoBehaviour
                 agent.SetDestination(targetDestination);
             }
         }
-        
-        // Если мы в движении, но уже вошли в радиус и игрок не убегает - притормаживаем
+
         if (distanceToPlayer <= followRadius && playerSpeed < 0.2f)
-        {
             HandleIdle();
-        }
     }
 
     // ---------------- ФИЗИКА И ВИЗУАЛ ----------------
 
     void HandleIdle()
     {
-        if (agent.isOnNavMesh)
+        if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = true;
-            agent.ResetPath(); // Сбрасываем путь, чтобы он не пытался "додавить" до точки
+            agent.ResetPath();
         }
+
         LookAtPlayer();
     }
 
     void LookAtPlayer()
     {
-        Vector3 dir = (player.position - transform.position).normalized;
-        dir.y = 0;
-        
-        if (dir != Vector3.zero)
+        if (player == null)
+            return;
+
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0f;
+
+        if (dir.sqrMagnitude > 0.001f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+            Quaternion targetRotation = Quaternion.LookRotation(dir.normalized);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                Time.deltaTime * lookRotationSpeed
+            );
         }
     }
 
     void UpdateAnimations()
     {
-        if (animator != null)
-        {
-            // Используем agent.velocity.magnitude для плавного перехода в Blend Tree
-            float speed = agent.velocity.magnitude;
-            animator.SetFloat(animSpeedHash, speed, 0.1f, Time.deltaTime);
-        }
+        if (animator == null || agent == null)
+            return;
+
+        float speed = agent.velocity.magnitude;
+        animator.SetFloat(animSpeedHash, speed, 0.1f, Time.deltaTime);
     }
 }

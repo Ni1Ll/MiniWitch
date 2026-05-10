@@ -2,15 +2,14 @@ using UnityEngine;
 
 public class OrderUIController : MonoBehaviour
 {
-    public OrderManager orderManager; // Ссылка на менеджер заказов
-    public Transform listParent;    // Объект Content внутри ScrollView
-    public GameObject listItemPrefab; // Префаб кнопки OrderListItem
-    public OrderDetailsUI detailsUI; // Панель с деталями заказа справа
+    public OrderManager orderManager;      // Ссылка на менеджер заказов
+    public Transform listParent;           // Content внутри ScrollView
+    public GameObject listItemPrefab;      // Префаб кнопки OrderListItem
+    public OrderDetailsUI detailsUI;       // Панель с деталями заказа справа
 
     void OnEnable()
     {
-        // Каждый раз, когда открываешь панель, список будет пересобираться актуально
-        if (orderManager != null && listItemPrefab != null)
+        if (orderManager != null && listItemPrefab != null && listParent != null)
         {
             BuildList();
         }
@@ -18,38 +17,74 @@ public class OrderUIController : MonoBehaviour
 
     public void BuildList()
     {
+        if (orderManager == null)
+        {
+            Debug.LogWarning("[OrderUIController] OrderManager не назначен.");
+            return;
+        }
+
+        if (listParent == null)
+        {
+            Debug.LogWarning("[OrderUIController] ListParent не назначен.");
+            return;
+        }
+
+        if (listItemPrefab == null)
+        {
+            Debug.LogWarning("[OrderUIController] ListItemPrefab не назначен.");
+            return;
+        }
+
         Debug.Log($"Попытка создать список. Заказов в менеджере: {orderManager.orders.Count}");
-        // Очищаем старые кнопки, если они были
+
+        // Очищаем старые кнопки
         foreach (Transform child in listParent)
         {
             Destroy(child.gameObject);
         }
+
         if (orderManager.orders.Count == 0)
         {
             Debug.LogWarning("Список заказов пуст! Спавнить нечего.");
             return;
         }
 
-        // Создаем новую кнопку для каждого заказа
-        foreach (var order in orderManager.orders) //[cite: 6]
+        // Создаём кнопку для каждого заказа
+        foreach (Order order in orderManager.orders)
         {
-            GameObject go = Instantiate(listItemPrefab, listParent); //[cite: 7]
+            if (order == null) continue;
+
+            GameObject go = Instantiate(listItemPrefab, listParent);
             Debug.Log($"Создан объект для заказа #{order.id}");
-            OrderListItem item = go.GetComponent<OrderListItem>(); //[cite: 7]
+
+            OrderListItem item = go.GetComponent<OrderListItem>();
 
             if (item != null)
             {
-                item.Init(order, OnOrderSelected); //[cite: 5, 7]
+                item.Init(order, OnOrderSelected);
+            }
+            else
+            {
+                Debug.LogWarning("[OrderUIController] На prefab нет OrderListItem.");
             }
         }
     }
 
-    // Метод, который сработает при нажатии на кнопку заказа
+    // Срабатывает при нажатии на кнопку заказа
     void OnOrderSelected(Order order)
     {
+        if (order == null) return;
+
+        // Показываем подробности
         if (detailsUI != null)
         {
-            detailsUI.Show(order); // Показываем подробности в окне рядом[cite: 4, 7]
+            detailsUI.Show(order);
+        }
+
+        // Заказ считается прочитанным, когда его раскрыли
+        if (orderManager != null)
+        {
+            orderManager.MarkOrderAsRead(order);
         }
     }
 }
