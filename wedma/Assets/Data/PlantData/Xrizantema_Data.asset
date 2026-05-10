@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 430e42bc822eadb40becbae9504e761a, type: 3}
   m_Name: Xrizantema_Data
   m_EditorClassIdentifier: 
-  itemName: 
-  icon: {fileID: 0}
+  itemName: "\u0421\u0435\u043C\u0435\u043D\u0430 \u0425\u0440\u0438\u0437\u0430\u043D\u0442\u0435\u043C\u044B"
+  icon: {fileID: 21300000, guid: 9e80fee242713904ea378f100f913a28, type: 3}
   maxStack: 99
   isTool: 0
   toolType: 0

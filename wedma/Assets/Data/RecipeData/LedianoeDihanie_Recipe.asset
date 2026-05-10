@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dc44c6a0f63b324ab35639cfef6fb3e, type: 3}
-  m_Name: Parenie
+  m_Name: LedianoeDihanie_Recipe
   m_EditorClassIdentifier: 
-  recipeName: "\u0411\u0430\u043D\u0438\u043A\u0430 \u041F\u0430\u0440\u0438\u043B\u043A\u0430"
+  recipeName: "\u041B\u0435\u0434\u044F\u043D\u043E\u0435 \u0414\u044B\u0445\u0430\u043D\u0438\u0435"
   ingredients:
-  - item: {fileID: 11400000, guid: 8dd2898186973654fabc3862aac7e740, type: 2}
+  - item: {fileID: 11400000, guid: 8419ada8ff8f4794d855ab0d6f85f055, type: 2}
     amount: 1
-  resultPotion: {fileID: 11400000, guid: 93ebf5a558752be458e0e6c0d2ad78df, type: 2}
+  resultPotion: {fileID: 11400000, guid: 00fb7978c880a5543998c8b7a8333822, type: 2}
   resultAmount: 1

@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfeb464ea0bcd8c44b91e023413e18f7, type: 3}
-  m_Name: Oblako
+  m_Name: SleziIvi
   m_EditorClassIdentifier: 
-  itemName: "\u041F\u0430\u0440\u044F\u0449\u043A\u0430"
-  icon: {fileID: 21300000, guid: 8910493d2a01f394fa7a0e19ba864d64, type: 3}
-  maxStack: 99
+  itemName: "\u0421\u043B\u0435\u0437\u044B \u0418\u0432\u044B"
+  icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
+  maxStack: 1
   isTool: 0
   toolType: 0
-  handVisualPrefab: {fileID: 5431006701020170465, guid: 371a1d298753ed449bdcba285ba88ac0, type: 3}
-  dropPrefab: {fileID: 5431006701020170465, guid: 371a1d298753ed449bdcba285ba88ac0, type: 3}
+  handVisualPrefab: {fileID: 7620059759732458665, guid: f475bc73ebcde5449bf938571c8b44ee, type: 3}
+  dropPrefab: {fileID: 7620059759732458665, guid: f475bc73ebcde5449bf938571c8b44ee, type: 3}
   sellPrice: 15
   buyPrice: 30
   healAmount: 10
