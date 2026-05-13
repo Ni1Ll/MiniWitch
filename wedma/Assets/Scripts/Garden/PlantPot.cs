@@ -65,6 +65,10 @@ public class PlantPot : MonoBehaviour
     private bool isBeingWatered = false;
     public float waterFillSpeed = 50f;
 
+    [Header("UI Грядки")]
+    public GameObject progressBarUI; 
+    public UnityEngine.UI.Image progressBarFill; 
+
     public void SetWatering(bool state)
     {
         isBeingWatered = state;
@@ -511,4 +515,21 @@ public class PlantPot : MonoBehaviour
 
         return PlantActionType.None;
     }
+
+    public void SetProgressBarActive(bool isActive)
+    {
+        if (progressBarUI != null)
+            progressBarUI.SetActive(isActive);
+
+        // Сбрасываем визуал при выключении
+        if (!isActive && progressBarFill != null)
+            progressBarFill.fillAmount = 0f;
+    }
+
+    public void UpdateProgressBar(float fillAmount)
+    {
+        if (progressBarFill != null)
+            progressBarFill.fillAmount = fillAmount;
+    }
+
 }

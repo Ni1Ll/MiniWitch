@@ -17,7 +17,6 @@ public class WitchInteraction : MonoBehaviour
     public float plantHoldTime = 2.0f;
     public float harvestHoldTime = 1.0f;
 
-    public Image holdProgressBar;
     public string defaultIdleState = "Blend Tree";
 
     [Header("Слот в руке")]
@@ -47,9 +46,6 @@ public class WitchInteraction : MonoBehaviour
         invectorController = GetComponent<vThirdPersonController>();
 
         UpdateHandVisuals();
-
-        if (holdProgressBar != null)
-            holdProgressBar.transform.parent.gameObject.SetActive(false);
 
         if (popupUI != null)
             popupUI.SetActive(false);
@@ -236,8 +232,8 @@ public class WitchInteraction : MonoBehaviour
                             currentRequiredTime = harvestHoldTime;
                         }
 
-                        if (holdProgressBar != null)
-                            holdProgressBar.transform.parent.gameObject.SetActive(true);
+                        pot.SetProgressBarActive(true);
+                        pot.UpdateProgressBar(0f);
 
                         if (animator != null)
                         {
@@ -263,8 +259,14 @@ public class WitchInteraction : MonoBehaviour
         {
             currentHoldTimer += Time.deltaTime;
 
-            if (holdProgressBar != null)
-                holdProgressBar.fillAmount = currentHoldTimer / currentRequiredTime;
+            if (targetObject != null)
+            {
+                PlantPot pot = targetObject.GetComponent<PlantPot>();
+                if (pot != null)
+                {
+                    pot.UpdateProgressBar(currentHoldTimer / currentRequiredTime);
+                }
+            }
 
             if (currentHoldTimer >= currentRequiredTime)
                 FinishHoldInteraction();
@@ -320,16 +322,19 @@ public class WitchInteraction : MonoBehaviour
     {
         StopWateringTarget();
 
+        if (targetObject != null)
+        {
+            PlantPot pot = targetObject.GetComponent<PlantPot>();
+            if (pot != null)
+            {
+                pot.SetProgressBarActive(false);
+            }
+        }
+
         isHolding = false;
         currentHoldTimer = 0f;
         targetObject = null;
         pendingAction = PlantActionType.None;
-
-        if (holdProgressBar != null)
-        {
-            holdProgressBar.fillAmount = 0f;
-            holdProgressBar.transform.parent.gameObject.SetActive(false);
-        }
     }
 
     void ExecuteInteraction(GameObject obj)
