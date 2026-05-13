@@ -96,13 +96,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a5c8ab8f7c64ba4d87c074dbcb4be7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemData: {fileID: 0}
+  itemData: {fileID: 11400000, guid: e627c3d489185c5459810a361ac96728, type: 2}
   plantInstance:
     baseData: {fileID: 0}
     family: 0
     activeGenes: []
     dormantGenes: []
-  generateGenesInEditor: 1
 --- !u!114 &2104538406533333983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,15 +142,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 286608292016458695, guid: bea73c3af3c19b44ca43454345478e32, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.765
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 286608292016458695, guid: bea73c3af3c19b44ca43454345478e32, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.06
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 286608292016458695, guid: bea73c3af3c19b44ca43454345478e32, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.717
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 286608292016458695, guid: bea73c3af3c19b44ca43454345478e32, type: 3}
       propertyPath: m_LocalRotation.w

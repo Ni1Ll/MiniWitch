@@ -10,11 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dc44c6a0f63b324ab35639cfef6fb3e, type: 3}
-  m_Name: Burka
+  m_Name: Slezivi_Recipe
   m_EditorClassIdentifier: 
-  recipeName: "\u0411\u043E\u0434\u044F\u0436\u043D\u043E\u0435"
+  recipeName: "\u0421\u043B\u0435\u0437\u044B \u0418\u0432\u044B"
   ingredients:
-  - item: {fileID: 11400000, guid: 6ce6bbd2a21a84147874660c0444f7d1, type: 2}
+  - item: {fileID: 11400000, guid: 8624eb5ed5e9ced4f8674987304cd33f, type: 2}
     amount: 1
-  resultPotion: {fileID: 11400000, guid: df7d6d5cf8e1ec54ca248a92f7feb903, type: 2}
+  - item: {fileID: 11400000, guid: 8419ada8ff8f4794d855ab0d6f85f055, type: 2}
+    amount: 1
+  resultPotion: {fileID: 11400000, guid: dc824c76445407946a51bd7ad2597979, type: 2}
   resultAmount: 1

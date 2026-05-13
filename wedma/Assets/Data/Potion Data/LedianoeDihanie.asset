@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfeb464ea0bcd8c44b91e023413e18f7, type: 3}
-  m_Name: Jija
+  m_Name: LedianoeDihanie
   m_EditorClassIdentifier: 
-  itemName: "\u0416\u0438\u0436\u0430"
-  icon: {fileID: 21300000, guid: 8910493d2a01f394fa7a0e19ba864d64, type: 3}
+  itemName: "\u041B\u0435\u0434\u044F\u043D\u043E\u0435 \u0414\u044B\u0445\u0430\u043D\u0438\u0435"
+  icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
   maxStack: 99
   isTool: 0
   toolType: 0
-  handVisualPrefab: {fileID: 4360165223605436601, guid: efd43c1d682b6754e9fc96b3eb9640e6, type: 3}
-  dropPrefab: {fileID: 4360165223605436601, guid: efd43c1d682b6754e9fc96b3eb9640e6, type: 3}
+  handVisualPrefab: {fileID: 379256157753034138, guid: cddaefeb77be77c4984a229d5f8041a8, type: 3}
+  dropPrefab: {fileID: 379256157753034138, guid: cddaefeb77be77c4984a229d5f8041a8, type: 3}
   sellPrice: 15
   buyPrice: 30
   healAmount: 10

@@ -96,13 +96,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a5c8ab8f7c64ba4d87c074dbcb4be7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemData: {fileID: 0}
+  itemData: {fileID: 11400000, guid: ab5b4d8c34d879549a57ccbf7ecadb87, type: 2}
   plantInstance:
     baseData: {fileID: 0}
     family: 0
     activeGenes: []
     dormantGenes: []
-  generateGenesInEditor: 1
 --- !u!114 &4698050396549042356
 MonoBehaviour:
   m_ObjectHideFlags: 0

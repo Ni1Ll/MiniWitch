@@ -9,15 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8c331b1e9b53ec4c8608673d02b172a, type: 3}
-  m_Name: Xrizantema
+  m_Script: {fileID: 11500000, guid: dfeb464ea0bcd8c44b91e023413e18f7, type: 3}
+  m_Name: JivaiaVoda
   m_EditorClassIdentifier: 
-  itemName: "\u0425\u0440\u0438\u0437\u0430\u043D\u0442\u0435\u043C\u0430"
+  itemName: "\u0416\u0438\u0432\u0430\u044F \u0412\u043E\u0434\u0430"
   icon: {fileID: 21300000, guid: af24c068c1499fc43995d8e391324676, type: 3}
   maxStack: 99
   isTool: 0
   toolType: 0
-  handVisualPrefab: {fileID: 769977941912578044, guid: 648f3df21632b0e43b0e265201e79d43, type: 3}
-  dropPrefab: {fileID: 769977941912578044, guid: 648f3df21632b0e43b0e265201e79d43, type: 3}
+  handVisualPrefab: {fileID: 388708110858797011, guid: ae28dc5256fd7a547835659ec096bb37, type: 3}
+  dropPrefab: {fileID: 388708110858797011, guid: ae28dc5256fd7a547835659ec096bb37, type: 3}
   sellPrice: 15
   buyPrice: 30
+  healAmount: 10
+  speedBoost: 0
