@@ -10,6 +10,9 @@ public class GeneSelectionUI : MonoBehaviour
     [Header("Root")]
     public GameObject panel;
 
+    [Header("Linked UI")]
+    public PlantInfoPanelUI plantInfoPanel;
+
     [Header("Close")]
     public Button closeButton;
 
@@ -38,10 +41,21 @@ public class GeneSelectionUI : MonoBehaviour
         if (panel != null)
             panel.SetActive(false);
 
+        // Скрываем инфо-панель при старте игры
+        if (plantInfoPanel != null && plantInfoPanel.panel != null)
+            plantInfoPanel.panel.SetActive(false);
+
+        // --- ИСПРАВЛЕНИЕ БАГА 2: Скрываем отдельно лежащую кнопку выхода при старте ---
+        if (closeButton != null)
+        {
+            closeButton.gameObject.SetActive(false);
+            closeButton.onClick.RemoveAllListeners(); // На всякий случай чистим старые слушатели
+            closeButton.onClick.AddListener(CloseAndApply);
+        }
+
         for (int i = 0; i < offeredButtons.Length; i++)
         {
             int index = i;
-
             if (offeredButtons[i] != null)
                 offeredButtons[i].onClick.AddListener(() => SelectOfferedGene(index));
         }
@@ -49,28 +63,14 @@ public class GeneSelectionUI : MonoBehaviour
         for (int i = 0; i < targetButtons.Length; i++)
         {
             int index = i;
-
             if (targetButtons[i] != null)
                 targetButtons[i].onClick.AddListener(() => SelectTargetGene(index));
         }
-
-        if (closeButton != null)
-            closeButton.onClick.AddListener(CloseAndApply);
     }
 
     public void Open(PlantInstance target, PlantInstance donor, int minBonus, int maxBonus, PlayerInventory playerInventory)
     {
-        if (target == null)
-        {
-            Debug.LogWarning("[GeneSelectionUI] Target plant is null.");
-            return;
-        }
-
-        if (donor == null)
-        {
-            Debug.LogWarning("[GeneSelectionUI] Donor plant is null.");
-            return;
-        }
+        if (target == null || donor == null) return;
 
         targetPlant = target;
         donorPlant = donor;
@@ -84,8 +84,19 @@ public class GeneSelectionUI : MonoBehaviour
 
         GenerateOfferedGenesFromFamilies(minBonus, maxBonus);
 
-        if (panel != null)
-            panel.SetActive(true);
+        if (panel != null) panel.SetActive(true);
+        if (closeButton != null) closeButton.gameObject.SetActive(true);
+
+        if (plantInfoPanel != null)
+        {
+            if (plantInfoPanel.panel != null) plantInfoPanel.panel.SetActive(true);
+
+            string pName = (inventory != null && inventory.GetSelectedSlot() != null && inventory.GetSelectedSlot().item != null)
+                ? inventory.GetSelectedSlot().item.itemName
+                : "Основное растение";
+
+            plantInfoPanel.Refresh(targetPlant, pName);
+        }
 
         RefreshUI();
     }
@@ -172,6 +183,15 @@ public class GeneSelectionUI : MonoBehaviour
                     offeredTexts[i].text = "-";
                 }
             }
+
+            if (plantInfoPanel != null && targetPlant != null)
+            {
+                string pName = (inventory != null && inventory.GetSelectedSlot() != null && inventory.GetSelectedSlot().item != null)
+                    ? inventory.GetSelectedSlot().item.itemName
+                    : "Основное растение";
+                plantInfoPanel.Refresh(targetPlant, pName);
+            }
+
         }
 
         // Правая сторона — спящие гены основного растения
@@ -309,6 +329,12 @@ public class GeneSelectionUI : MonoBehaviour
         selectedOfferedIndex = -1;
         hasAppliedAnyChange = false;
 
+        if (plantInfoPanel != null)
+        {
+            plantInfoPanel.ClearDisplayTarget();
+            if (plantInfoPanel.panel != null) plantInfoPanel.panel.SetActive(false);
+        }
+
         targetPlant = null;
         donorPlant = null;
         inventory = null;
@@ -318,7 +344,7 @@ public class GeneSelectionUI : MonoBehaviour
         for (int i = 0; i < offeredUsed.Length; i++)
             offeredUsed[i] = false;
 
-        if (panel != null)
-            panel.SetActive(false);
+        if (panel != null) panel.SetActive(false);
+        if (closeButton != null) closeButton.gameObject.SetActive(false);
     }
 }

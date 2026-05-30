@@ -35,7 +35,6 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
-        // Теперь Q работает ВСЕГДА (даже если котел открыт)
         if (Input.GetKeyDown(KeyCode.Q))
         {
             isInventoryOpen = !isInventoryOpen;
@@ -47,14 +46,16 @@ public class InventoryUI : MonoBehaviour
     {
         bool isCauldronActive = Cauldron.isCauldronOpen;
 
-        bool showHotbar = isInventoryOpen || isCauldronActive;
+        bool isTableActive = GeneticTable.isTableOpen && !GeneticTable.hasPlantOnPlate;
+        bool showHotbar = isInventoryOpen || isCauldronActive || isTableActive;
+
         if (hotbarPanel != null) hotbarPanel.SetActive(showHotbar);
-
         if (mainInventoryPanel != null) mainInventoryPanel.SetActive(isInventoryOpen);
-
         if (tooltipPanel != null) tooltipPanel.SetActive(showHotbar);
 
-        if (showHotbar)
+        bool needCursor = isInventoryOpen || isCauldronActive || GeneticTable.isTableOpen;
+
+        if (needCursor)
         {
             UpdateAllSlots();
             Cursor.visible = true;

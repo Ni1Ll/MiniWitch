@@ -51,7 +51,7 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
     {
         if (currentSlot == null || currentSlot.IsEmpty) return;
 
-        draggedSlot = this; // ���������� ����� ���� � ���������� ����������
+        draggedSlot = this; 
         if (InventoryUI.instance != null) InventoryUI.instance.StartDrag(currentSlot.item.icon);
     }
 
@@ -65,7 +65,6 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
     {
         if (InventoryUI.instance != null) InventoryUI.instance.StopDrag();
 
-        // Проверяем, не отпустили ли мы мышку над другим слотом инвентаря
         bool isPointerOverUI = eventData.pointerEnter != null && eventData.pointerEnter.GetComponent<SlotUI>() != null;
 
         if (!isPointerOverUI && currentSlot != null && !currentSlot.IsEmpty && !isResultSlot)
@@ -75,37 +74,57 @@ public class SlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
 
             if (activeCam != null && currentSlot.item.dropPrefab != null)
             {
-                Ray ray = activeCam.ScreenPointToRay(Input.mousePosition);
-
-                // --- ТВОЯ ИСХОДНАЯ ЛОГИКА ---
                 float dropDistance = 1.7f;
-
-                // Берем точку прямо в воздухе, куда указывает мышка
+                Ray ray = activeCam.ScreenPointToRay(Input.mousePosition);
                 Vector3 spawnPos = ray.GetPoint(dropDistance);
 
-                // Роняем предмет!
-                GameObject droppedObj = Instantiate(currentSlot.item.dropPrefab, spawnPos, Quaternion.identity);
+                if (GeneticTable.isTableOpen && !GeneticTable.hasPlantOnPlate)
+                {
+                    if (GeneticTable.instance != null)
+                    {
+                        GeneticTable.instance.AnimatePlantDrop(currentSlot.item, currentSlot.plantInstance);
+                    }
 
-                PickupItem pickup = droppedObj.GetComponent<PickupItem>();
-                if (pickup == null) pickup = droppedObj.AddComponent<PickupItem>();
-                pickup.itemData = currentSlot.item;
-                // ----------------------------
+                    currentSlot.count--;
+                    if (currentSlot.count <= 0) currentSlot.Clear();
+                    if (InventoryUI.instance != null) InventoryUI.instance.UpdateAllSlots();
 
-                // Списываем из инвентаря
+                    draggedSlot = null;
+                    return;
+                }
+
+                if (GeneticTable.isTableOpen && GeneticTable.hasPlantOnPlate)
+                {
+                    draggedSlot = null;
+                    return;
+                }
+
+                if (GeneticTable.isTableOpen && GeneticTable.hasPlantOnPlate)
+                {
+                    Debug.Log("На тарелке уже есть цветок. Бросок отменен.");
+                    draggedSlot = null;
+                    return;
+                }
+
+                GameObject worldDroppedObj = Instantiate(currentSlot.item.dropPrefab, spawnPos, Quaternion.identity);
+
+                PickupItem worldPickup = worldDroppedObj.GetComponent<PickupItem>();
+                if (worldPickup == null) worldPickup = worldDroppedObj.AddComponent<PickupItem>();
+                worldPickup.itemData = currentSlot.item;
+
                 currentSlot.count--;
                 if (currentSlot.count <= 0) currentSlot.Clear();
                 if (InventoryUI.instance != null) InventoryUI.instance.UpdateAllSlots();
             }
         }
 
-        draggedSlot = null; // Очищаем память
+        draggedSlot = null;
     }
 
     public void OnDrop(PointerEventData eventData)
     {
         if (draggedSlot != null && draggedSlot != this && this.currentSlot != null && !this.isResultSlot)
         {
-            // ����� ������ ������� (��� �������� � �������� ����������)
             ItemData tempItem = this.currentSlot.item;
             int tempCount = this.currentSlot.count;
 

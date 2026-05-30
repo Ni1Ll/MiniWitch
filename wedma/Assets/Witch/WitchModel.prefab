@@ -304,7 +304,6 @@ MonoBehaviour:
   waterHoldTime: 5
   plantHoldTime: 10
   harvestHoldTime: 3
-  holdProgressBar: {fileID: 0}
   defaultIdleState: Blend Tree
   handSocket: {fileID: 2920911000378984662}
   npcAgent: {fileID: 0}
@@ -325,46 +324,172 @@ MonoBehaviour:
   slots:
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   - item: {fileID: 0}
     count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
+  - item: {fileID: 0}
+    count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
+  - item: {fileID: 0}
+    count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
+  - item: {fileID: 0}
+    count: 0
+    plantInstance:
+      baseData: {fileID: 0}
+      family: 0
+      activeGenes: []
+      dormantGenes: []
   selectedHotbarIndex: 0
 --- !u!114 &3379516707501740850
 MonoBehaviour:

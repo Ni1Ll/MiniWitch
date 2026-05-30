@@ -153,7 +153,7 @@ public class PlayerInventory : MonoBehaviour
         }
 
         // 2. Потом пробуем остальные хотбар-слоты 0-4
-        for (int i = 0; i <= 4 && i < slots.Length; i++)
+        for (int i = 0; i <= 5 && i < slots.Length; i++)
         {
             if (slots[i].IsEmpty)
             {
@@ -187,7 +187,7 @@ public class PlayerInventory : MonoBehaviour
     {
         if (slots == null || slots.Length == 0) return null;
 
-        selectedHotbarIndex = Mathf.Clamp(selectedHotbarIndex, 0, Mathf.Min(4, slots.Length - 1));
+        selectedHotbarIndex = Mathf.Clamp(selectedHotbarIndex, 0, Mathf.Min(5, slots.Length - 1));
         return slots[selectedHotbarIndex];
     }
 
@@ -210,8 +210,8 @@ public class PlayerInventory : MonoBehaviour
     {
         selectedHotbarIndex += direction;
 
-        if (selectedHotbarIndex > 4) selectedHotbarIndex = 0;
-        if (selectedHotbarIndex < 0) selectedHotbarIndex = 4;
+        if (selectedHotbarIndex > 5) selectedHotbarIndex = 0;
+        if (selectedHotbarIndex < 0) selectedHotbarIndex = 5;
 
         UpdateUI();
     }
